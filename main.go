@@ -22,6 +22,10 @@ var protocol = flag.Int("p", 578, "The protocol version number sent during ping"
 var favicon = flag.String("f", "", "If specified, the server's icon will be save to")
 
 func main() {
+
+	ips()
+	return
+
 	flag.Parse()
 	flag.Usage = usage
 	addr := flag.Arg(0)
