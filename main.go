@@ -3,11 +3,11 @@ package main
 import (
 	"encoding/base64"
 	"encoding/json"
-	"flag"
 	"fmt"
 	"image"
 	_ "image/jpeg"
 	"image/png"
+	"net/netip"
 	"os"
 	"strings"
 	"text/template"
@@ -18,39 +18,41 @@ import (
 	"github.com/google/uuid"
 )
 
-var protocol = flag.Int("p", 578, "The protocol version number sent during ping")
-var favicon = flag.String("f", "", "If specified, the server's icon will be save to")
+const maxGoroutines = 10
 
 func main() {
 
-	ips()
-	return
+	guard := make(chan struct{}, maxGoroutines)
 
-	flag.Parse()
-	flag.Usage = usage
-	addr := flag.Arg(0)
-	if addr == "" {
-		fmt.Println("")
-		flag.Usage()
-		os.Exit(2)
-	}
-
-	fmt.Printf("MCPING (%s):", addr)
-	resp, delay, err := bot.PingAndList(addr)
+	prefix, err := netip.ParsePrefix("0.0.0.0/0")
 	if err != nil {
-		fmt.Printf("Ping and list server fail: %v", err)
-		os.Exit(1)
+		panic(err)
 	}
 
-	var s status
-	err = json.Unmarshal(resp, &s)
-	if err != nil {
-		fmt.Print("Parse json response fail:", err)
-		os.Exit(1)
-	}
-	s.Delay = delay
+	for addr := prefix.Addr(); prefix.Contains(addr); addr = addr.Next() {
 
-	fmt.Print(&s)
+		guard <- struct{}{}
+		go func(addr netip.Addr) {
+
+			resp, delay, err := bot.PingAndList(addr.String())
+			if err != nil {
+				fmt.Printf("Ping and list server fail: %v", err)
+				os.Exit(1)
+			}
+
+			var s status
+			err = json.Unmarshal(resp, &s)
+			if err != nil {
+				fmt.Print("Parse json response fail:", err)
+				os.Exit(1)
+			}
+			s.Delay = delay
+
+			fmt.Println(s.String())
+
+			<-guard
+		}(addr)
+	}
 }
 
 type status struct {
@@ -103,9 +105,4 @@ func (s *status) String() string {
 		panic(err)
 	}
 	return sb.String()
-}
-
-func usage() {
-	_, _ = fmt.Fprintf(flag.CommandLine.Output(), "Usage:\n%s [-f] [-p] <address>[:port]\n", os.Args[0])
-	flag.PrintDefaults()
 }
