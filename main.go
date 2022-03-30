@@ -1,16 +1,11 @@
 package main
 
 import (
-	"encoding/base64"
 	"encoding/json"
 	"fmt"
-	"image"
 	_ "image/jpeg"
-	"image/png"
 	"net/netip"
 	"os"
-	"strings"
-	"text/template"
 	"time"
 
 	"github.com/Tnze/go-mc/bot"
@@ -71,38 +66,4 @@ type status struct {
 	}
 	Favicon Icon
 	Delay   time.Duration
-}
-
-// Icon should be a PNG image that is Base64 encoded
-// (without newlines: \n, new lines no longer work since 1.13)
-// and prepended with "data:image/png;base64,".
-type Icon string
-
-func (i Icon) ToImage() (icon image.Image, err error) {
-	const prefix = "data:image/png;base64,"
-	if !strings.HasPrefix(string(i), prefix) {
-		return nil, fmt.Errorf("server icon should prepended with %q", prefix)
-	}
-	base64png := strings.TrimPrefix(string(i), prefix)
-	r := base64.NewDecoder(base64.StdEncoding, strings.NewReader(base64png))
-	icon, err = png.Decode(r)
-	return
-}
-
-var outTemp = template.Must(template.New("output").Parse(`
-	Version: [{{ .Version.Protocol }}] {{ .Version.Name }}
-	Description: 
-{{ .Description }}
-	Delay: {{ .Delay }}
-	Players: {{ .Players.Online }}/{{ .Players.Max }}{{ range .Players.Sample }}
-	- [{{ .Name }}] {{ .ID }}{{ end }}
-`))
-
-func (s *status) String() string {
-	var sb strings.Builder
-	err := outTemp.Execute(&sb, s)
-	if err != nil {
-		panic(err)
-	}
-	return sb.String()
 }
