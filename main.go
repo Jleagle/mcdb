@@ -7,18 +7,13 @@ import (
 	"net"
 	"net/netip"
 	"sync"
-	"time"
 
 	"github.com/Tnze/go-mc/bot"
-	"github.com/Tnze/go-mc/chat"
 	mcnet "github.com/Tnze/go-mc/net"
 	"github.com/cheggaaa/pb/v3"
-	"github.com/google/uuid"
 )
 
-const (
-	maxGoroutines = 10
-)
+const maxGoroutines = 10
 
 func main() {
 
@@ -77,22 +72,4 @@ func main() {
 
 	wg.Wait()
 	bar.Finish()
-}
-
-type status struct {
-	Description chat.Message
-	Players     struct {
-		Max    int
-		Online int
-		Sample []struct {
-			ID   uuid.UUID
-			Name string
-		}
-	}
-	Version struct {
-		Name     string
-		Protocol int
-	}
-	Favicon Icon
-	Delay   time.Duration
 }

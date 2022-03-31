@@ -6,7 +6,6 @@ import (
 	"image"
 	"image/png"
 	"strings"
-	"text/template"
 )
 
 const pngPrefix = "data:image/png;base64,"
@@ -26,23 +25,4 @@ func (i Icon) ToImage() (icon image.Image, err error) {
 	r := base64.NewDecoder(base64.StdEncoding, strings.NewReader(base64png))
 
 	return png.Decode(r)
-}
-
-var outTemp = template.Must(template.New("output").Parse(`
-	Version: [{{ .Version.Protocol }}] {{ .Version.Name }}
-	Description: {{ .Description }}
-	Delay: {{ .Delay }}
-	Players: {{ .Players.Online }}/{{ .Players.Max }}{{ range .Players.Sample }}
-	- [{{ .Name }}] {{ .ID }}{{ end }}
-`))
-
-func (s *status) String() (string, error) {
-
-	var sb strings.Builder
-	err := outTemp.Execute(&sb, s)
-	if err != nil {
-		return "", err
-	}
-
-	return sb.String(), nil
 }
