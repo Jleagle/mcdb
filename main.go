@@ -4,50 +4,79 @@ import (
 	"encoding/json"
 	"fmt"
 	_ "image/jpeg"
+	"net"
 	"net/netip"
-	"os"
+	"sync"
 	"time"
 
 	"github.com/Tnze/go-mc/bot"
 	"github.com/Tnze/go-mc/chat"
+	mcnet "github.com/Tnze/go-mc/net"
+	"github.com/cheggaaa/pb/v3"
 	"github.com/google/uuid"
 )
 
-const maxGoroutines = 10
+const (
+	maxGoroutines = 10
+)
 
 func main() {
 
-	guard := make(chan struct{}, maxGoroutines)
-
 	prefix, err := netip.ParsePrefix("0.0.0.0/0")
 	if err != nil {
-		panic(err)
+		fmt.Printf("Failed to parse prefix: %v", err)
+		return
 	}
+
+	mcnet.DefaultDialer = mcnet.Dialer{Dialer: &net.Dialer{}}
+
+	bar := pb.StartNew(1 << 32)
+	guard := make(chan struct{}, maxGoroutines)
+	wg := sync.WaitGroup{}
 
 	for addr := prefix.Addr(); prefix.Contains(addr); addr = addr.Next() {
 
+		if addr.IsPrivate() || !addr.IsValid() {
+			continue
+		}
+
+		wg.Add(1)
 		guard <- struct{}{}
 		go func(addr netip.Addr) {
 
-			resp, delay, err := bot.PingAndList(addr.String())
+			defer func() {
+				bar.Increment()
+				wg.Done()
+				<-guard
+			}()
+
+			resp, delay, err := bot.PingAndList(fmt.Sprintf("%s:%d", addr.String(), 25565))
 			if err != nil {
-				fmt.Printf("Ping and list server fail: %v", err)
-				os.Exit(1)
+
+				if _, ok := err.(bot.LoginErr); ok {
+					return
+				}
+
+				fmt.Println("Ping and list server fail: ", err)
+				return
 			}
 
 			var s status
 			err = json.Unmarshal(resp, &s)
 			if err != nil {
-				fmt.Print("Parse json response fail:", err)
-				os.Exit(1)
+				fmt.Println("Parse json response fail:", err)
+				return
 			}
+
 			s.Delay = delay
 
-			fmt.Println(s.String())
+			fmt.Println(addr.String() + " " + s.Description.Text)
 
-			<-guard
 		}(addr)
 	}
+
+	wg.Wait()
+	bar.Finish()
 }
 
 type status struct {
