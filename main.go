@@ -3,9 +3,11 @@ package main
 import (
 	"encoding/json"
 	"fmt"
-	_ "image/jpeg"
+	"io"
+	"log"
 	"net"
 	"net/netip"
+	"os"
 	"sync"
 
 	"github.com/Tnze/go-mc/bot"
@@ -39,8 +41,6 @@ func main() {
 		log.Println(err)
 	}
 
-	guard := make(chan struct{}, maxGoroutines)
-	
 	prefix, err := netip.ParsePrefix("0.0.0.0/0")
 	if err != nil {
 		log.Fatal(err)
