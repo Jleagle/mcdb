@@ -1,9 +1,9 @@
 package main
 
 import (
+	"bufio"
 	"encoding/json"
 	"fmt"
-	"io"
 	"log"
 	"net"
 	"net/netip"
@@ -17,59 +17,31 @@ import (
 
 const maxGoroutines = 10
 
+var logFile *os.File
+
 func main() {
 
-	// Get where we left off
-	f, err := os.OpenFile("start.txt", os.O_APPEND|os.O_CREATE|os.O_RDWR, 0644)
+	mcnet.DefaultDialer = mcnet.Dialer{Dialer: &net.Dialer{}}
+
+	var err error
+	logFile, err = os.OpenFile("servers.txt", os.O_APPEND|os.O_CREATE|os.O_RDWR, 0644)
 	if err != nil {
 		log.Fatal(err)
 	}
 
-	defer func() {
-		if err = f.Close(); err != nil {
-			log.Println(err)
-		}
-	}()
+	defer log.Fatal(logFile.Close())
 
-	b, err := io.ReadAll(f)
-	if err != nil {
-		log.Fatal(err)
-	}
-
-	savedAddress, err := netip.ParseAddr(string(b))
-	if err != nil {
-		log.Println(err)
-	}
+	guard := make(chan struct{}, maxGoroutines)
+	bar := pb.StartNew(1 << 32)
+	wg := sync.WaitGroup{}
+	save := load()
 
 	prefix, err := netip.ParsePrefix("0.0.0.0/0")
 	if err != nil {
 		log.Fatal(err)
 	}
 
-	var latest netip.Addr
-
-	defer func() {
-		_, err = f.WriteString(latest.String())
-		if err != nil {
-			log.Println(err)
-		}
-	}()
-
-	mcnet.DefaultDialer = mcnet.Dialer{Dialer: &net.Dialer{}}
-
-	bar := pb.StartNew(1 << 32)
-	guard := make(chan struct{}, maxGoroutines)
-	wg := sync.WaitGroup{}
-
 	for addr := prefix.Addr(); prefix.Contains(addr); addr = addr.Next() {
-
-		if addr.IsPrivate() || !addr.IsValid() {
-			continue
-		}
-
-		if savedAddress.Compare(addr) == 1 {
-			continue
-		}
 
 		wg.Add(1)
 		guard <- struct{}{}
@@ -79,10 +51,21 @@ func main() {
 				bar.Increment()
 				wg.Done()
 				<-guard
-				if addr.Compare(latest) == 0 {
-					latest = addr
+				if addr.Compare(save) == 1 {
+					_, err := logFile.WriteString(addr.String())
+					if err != nil {
+						log.Println(err)
+					}
 				}
 			}()
+
+			if addr.IsPrivate() || !addr.IsValid() {
+				return
+			}
+
+			if save.Compare(addr) == 1 {
+				return
+			}
 
 			resp, delay, err := bot.PingAndList(fmt.Sprintf("%s:%d", addr.String(), 25565))
 			if err != nil {
@@ -111,4 +94,28 @@ func main() {
 
 	wg.Wait()
 	bar.Finish()
+}
+
+func load() netip.Addr {
+
+	// Get last line
+	var last string
+	scanner := bufio.NewScanner(logFile)
+	for scanner.Scan() {
+		line := scanner.Text()
+		if line != "" {
+			last = line
+		}
+	}
+
+	if err := scanner.Err(); err != nil {
+		log.Fatal(err)
+	}
+
+	addr, err := netip.ParseAddr(last)
+	if err != nil {
+		log.Println(err)
+	}
+
+	return addr
 }
