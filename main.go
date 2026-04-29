@@ -22,15 +22,6 @@ func main() {
 		},
 	}
 
-	var scanCmd = &cobra.Command{
-		Use:   "scan",
-		Short: "Start the Minecraft server scanner",
-		Run: func(cmd *cobra.Command, args []string) {
-			fmt.Println("Starting scanner...")
-			scanner.Start(storageInterface{})
-		},
-	}
-
 	var serveCmd = &cobra.Command{
 		Use:   "serve",
 		Short: "Start the web server",
@@ -44,6 +35,15 @@ func main() {
 	var seedCmd = &cobra.Command{
 		Use:   "seed",
 		Short: "Seed the database from known Minecraft server lists",
+	}
+
+	var seedIPv4Cmd = &cobra.Command{
+		Use:   "ipv4",
+		Short: "Seed the database by scanning the IPv4 space",
+		Run: func(cmd *cobra.Command, args []string) {
+			fmt.Println("Starting IPv4 seeder...")
+			seeder.StartIPv4(storageInterface{})
+		},
 	}
 
 	var seedMinecraftMPCmd = &cobra.Command{
@@ -63,7 +63,7 @@ func main() {
 			seeder.StartMinecraftServerList(storageInterface{})
 		},
 	}
-	seedCmd.AddCommand(seedMinecraftMPCmd, seedMinecraftServerListCmd)
+	seedCmd.AddCommand(seedIPv4Cmd, seedMinecraftMPCmd, seedMinecraftServerListCmd)
 
 	var probeCmd = &cobra.Command{
 		Use:   "probe [host]",
@@ -96,7 +96,7 @@ func main() {
 		},
 	}
 
-	rootCmd.AddCommand(scanCmd, serveCmd, seedCmd, probeCmd)
+	rootCmd.AddCommand(serveCmd, seedCmd, probeCmd)
 
 	if err := rootCmd.Execute(); err != nil {
 		fmt.Println(err)
