@@ -80,7 +80,7 @@ func SaveServer(s scanner.Server) error {
 	return err
 }
 
-func SaveIP(ip string) error {
+func SaveIP(ip string) (bool, error) {
 	ctx, cancel := context.WithTimeout(context.Background(), 5*time.Second)
 	defer cancel()
 
@@ -93,8 +93,12 @@ func SaveIP(ip string) error {
 	}
 	opts := options.Update().SetUpsert(true)
 
-	_, err := serversCol.UpdateOne(ctx, bson.M{"_id": ip}, update, opts)
-	return err
+	res, err := serversCol.UpdateOne(ctx, bson.M{"_id": ip}, update, opts)
+	if err != nil {
+		return false, err
+	}
+
+	return res.UpsertedCount > 0, nil
 }
 
 type ListOptions struct {

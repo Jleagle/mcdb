@@ -62,11 +62,15 @@ func StartIPv4(store Storage) {
 				return
 			}
 
-			err = store.SaveIP(addr.String())
+			isNew, err := store.SaveIP(addr.String())
 			if err != nil {
 				log.Printf("Failed to save IP %s: %v", addr.String(), err)
 			} else {
-				fmt.Printf("Found and seeded Minecraft server: %s\n", addr.String())
+				if isNew {
+					fmt.Printf("Seeded new Minecraft server: %s\n", addr.String())
+				} else {
+					fmt.Printf("Seeded existing Minecraft server: %s\n", addr.String())
+				}
 			}
 
 			store.SaveLastIP(addr.String())

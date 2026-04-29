@@ -111,7 +111,7 @@ func (s storageInterface) SaveServer(status scanner.Server) error {
 	return storage.SaveServer(status)
 }
 
-func (s storageInterface) SaveIP(ip string) error {
+func (s storageInterface) SaveIP(ip string) (bool, error) {
 	return storage.SaveIP(ip)
 }
 

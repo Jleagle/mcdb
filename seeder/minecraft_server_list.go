@@ -49,11 +49,15 @@ func StartMinecraftServerList(store Storage) {
 				continue
 			}
 
-			err = store.SaveIP(ip)
+			isNew, err := store.SaveIP(ip)
 			if err != nil {
 				log.Printf("Failed to save IP %s: %v", ip, err)
 			} else {
-				fmt.Printf("Seeded: %s\n", ip)
+				if isNew {
+					fmt.Printf("Seeded new: %s\n", ip)
+				} else {
+					fmt.Printf("Seeded existing: %s\n", ip)
+				}
 				found++
 			}
 		}
