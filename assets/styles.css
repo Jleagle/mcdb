@@ -913,3 +913,93 @@ pre {
         animation-iteration-count: 1 !important;
     }
 }
+
+/* Connect Page Styles */
+.content-body {
+    display: grid;
+    gap: 2rem;
+    max-width: 800px;
+}
+
+.guide-section {
+    display: grid;
+    gap: 1rem;
+}
+
+.guide-section h2 {
+    font-size: 1.75rem;
+    margin-bottom: 0.5rem;
+}
+
+.step-list {
+    display: grid;
+    gap: 1.25rem;
+    padding-left: 1.25rem;
+    margin: 0;
+}
+
+.step-list li {
+    padding-left: 0.5rem;
+    color: var(--text-muted);
+}
+
+.step-list li strong {
+    color: var(--text);
+    display: block;
+    margin-bottom: 0.25rem;
+}
+
+.tip-box,
+.alert-box {
+    padding: 1.25rem;
+    border-radius: var(--radius);
+    border: 1px solid var(--border);
+    font-size: 0.95rem;
+}
+
+.tip-box {
+    background: var(--accent-soft);
+    border-color: color-mix(in srgb, var(--accent) 30%, var(--border));
+}
+
+.tip-box strong {
+    color: var(--accent);
+}
+
+.alert-box {
+    background: var(--danger-soft);
+    border-color: color-mix(in srgb, var(--danger) 30%, var(--border));
+}
+
+.alert-box strong {
+    color: var(--danger);
+}
+
+.issue-list {
+    display: grid;
+    gap: 1rem;
+    padding-left: 1.25rem;
+    margin: 0;
+}
+
+.issue-list li strong {
+    color: var(--text);
+}
+
+.cta-box {
+    padding: 2rem;
+    text-align: center;
+    background: var(--surface-raised);
+    border: 1px solid var(--border);
+    border-radius: var(--radius);
+    box-shadow: var(--shadow-soft);
+}
+
+.cta-box h3 {
+    font-size: 1.5rem;
+    margin-bottom: 0.5rem;
+}
+
+.cta-box p {
+    margin-bottom: 1.5rem;
+}

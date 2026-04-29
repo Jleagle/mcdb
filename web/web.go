@@ -45,6 +45,7 @@ func Start(store Storage) {
 	mux.HandleFunc("/servers", indexHandler(store))
 	mux.HandleFunc("/search", searchHandler(store))
 	mux.HandleFunc("/server/", serverHandler(store))
+	mux.HandleFunc("/connect", connectHandler())
 
 	// Register asset handler
 	RegisterAssetHandler(mux)
@@ -89,6 +90,8 @@ func currentNav(path string) string {
 		return "servers"
 	case path == "/search":
 		return "search"
+	case path == "/connect":
+		return "connect"
 	default:
 		return ""
 	}

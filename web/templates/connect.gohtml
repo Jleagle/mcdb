@@ -1,0 +1,85 @@
+{{/* gotype: github.com/Jleagle/mcdb/web.ConnectTemplateData */}}
+
+{{define "content"}}
+    <header class="page-header">
+        <p class="page-kicker">Help Guide</p>
+        <h1>How to Connect to a Minecraft Server</h1>
+        <p class="page-copy">New to multiplayer? This guide explains how to join a Minecraft server on both Java and Bedrock editions.</p>
+    </header>
+
+    <div class="content-body">
+        <section class="guide-section">
+            <h2>Join a Java Edition Server</h2>
+            <p>Java Edition is the original version of Minecraft for PC, Mac, and Linux. Follow these steps to join a server:</p>
+            <ol class="step-list">
+                <li>
+                    <strong>Launch Minecraft:</strong> Open the Minecraft Launcher and start the version of the game the server requires (usually the latest version).
+                </li>
+                <li>
+                    <strong>Open Multiplayer:</strong> From the main menu, click the <strong>Multiplayer</strong> button.
+                </li>
+                <li>
+                    <strong>Add Server:</strong> Click <strong>Add Server</strong> at the bottom of the screen.
+                </li>
+                <li>
+                    <strong>Enter Details:</strong> Give the server a name (e.g., "My Favorite Server") and type the server's <strong>IP Address</strong> into the Server Address box.
+                </li>
+                <li>
+                    <strong>Save and Join:</strong> Click <strong>Done</strong>. The server will appear in your list. Double-click it or select it and click <strong>Join Server</strong>.
+                </li>
+            </ol>
+            <div class="tip-box">
+                <strong>Pro Tip:</strong> You can also use "Direct Connection" if you don't want to save the server to your list permanently.
+            </div>
+        </section>
+
+        <section class="guide-section">
+            <h2>Join a Bedrock Edition Server</h2>
+            <p>Bedrock Edition is used on Windows 10/11, Mobile, Xbox, PlayStation, and Switch. Here's how to connect:</p>
+            <ol class="step-list">
+                <li>
+                    <strong>Start the Game:</strong> Open Minecraft and click the <strong>Play</strong> button.
+                </li>
+                <li>
+                    <strong>Servers Tab:</strong> Navigate to the <strong>Servers</strong> tab at the top of the menu.
+                </li>
+                <li>
+                    <strong>Add Server:</strong> Scroll to the bottom of the Featured Servers list and click <strong>Add Server</strong>.
+                </li>
+                <li>
+                    <strong>Enter Information:</strong> Enter the Server Name, <strong>Server Address</strong> (IP), and the <strong>Port</strong> (usually 19132).
+                </li>
+                <li>
+                    <strong>Play:</strong> Click <strong>Save</strong> to add it to your list, or <strong>Play</strong> to join immediately.
+                </li>
+            </ol>
+            <div class="alert-box">
+                <strong>Console Players:</strong> Connecting to custom servers on Xbox, PlayStation, and Switch is restricted by default. You may need to use third-party tools like "Bedrock Together" or DNS workarounds to join non-featured servers.
+            </div>
+        </section>
+
+        <section class="guide-section">
+            <h2>Common Connection Issues</h2>
+            <ul class="issue-list">
+                <li>
+                    <strong>"Outdated Server" or "Outdated Client":</strong> Your version of Minecraft doesn't match the server's version. Check the server details on MCDB to see which version you need.
+                </li>
+                <li>
+                    <strong>"Invalid Session":</strong> Try restarting your game and launcher. This often happens if you've been logged in for a long time.
+                </li>
+                <li>
+                    <strong>"Connection Refused":</strong> The server might be offline, or you might have a typo in the IP address.
+                </li>
+                <li>
+                    <strong>Firewall/Antivirus:</strong> Ensure your computer's firewall isn't blocking Minecraft's connection to the internet.
+                </li>
+            </ul>
+        </section>
+
+        <div class="cta-box">
+            <h3>Ready to find a server?</h3>
+            <p>Browse thousands of indexed servers to find your next home.</p>
+            <a href="/servers" class="button-primary">Browse All Servers</a>
+        </div>
+    </div>
+{{end}}
