@@ -117,11 +117,18 @@ func (s Server) GetTags() []string {
 		"skyblock", "prison", "survival", "factions", "creative", "smp", "vanilla",
 		"bedwars", "lifesteal", "cobblemon", "pixelmon", "anarchy", "towny", "hardcore",
 		"minigames", "parkour", "kitpvp", "pve", "pvp", "rpg",
+		"earth", "economy", "oneblock", "skywars", "practice", "duels", "boxmc",
+		"crossplay", "non-p2w",
 	}
 	for _, kw := range keywords {
 		if strings.Contains(motd, kw) {
 			tags[kw] = struct{}{}
 		}
+	}
+
+	// 4. Automatic crossplay tag
+	if s.IsJava && s.IsBedrock {
+		tags["crossplay"] = struct{}{}
 	}
 
 	// Convert map to slice
