@@ -1,0 +1,117 @@
+{{/* gotype: github.com/Jleagle/mcdb/web.ServerTemplateData */}}
+
+{{define "content"}}
+    <section class="server-hero" aria-labelledby="server-title">
+        {{if .Favicon}}
+            <img src="{{.Favicon | safe}}" class="server-icon" alt="">
+        {{else}}
+            <img src="/logo.png" class="server-icon" alt="">
+        {{end}}
+
+        <div class="server-meta">
+            <p class="page-kicker">Server detail</p>
+            <h1 id="server-title">Server: {{.IP}}</h1>
+            <div class="server-actions">
+                {{if .IsOnline}}
+                    <span class="status status-online">Online</span>
+                {{else}}
+                    <span class="status status-offline">Offline</span>
+                {{end}}
+                <a href="/servers" class="button-secondary">&larr; Back to servers</a>
+            </div>
+        </div>
+    </section>
+
+    <div class="server-detail">
+        <section class="detail-grid" aria-label="Server summary">
+            <div class="detail-panel">
+                <h2>General Info</h2>
+                <ul class="detail-list">
+                    <li><strong>Version:</strong> {{.Version.Name}}</li>
+                    <li>
+                        <strong>Players:</strong> {{.Players.Online}} / {{.Players.Max}}
+                        <progress class="progress-bar progress-bar-compact" value="{{.PlayerPercent}}" max="100" title="{{.PlayerPercent}}%">{{.PlayerPercent}}%</progress>
+                    </li>
+                    <li><strong>Latency:</strong> {{.Delay}}</li>
+                    {{if .Location}}
+                        <li><strong>Location:</strong> {{.Location.City}}, {{.Location.Country}} ({{.Location.CountryCode}})</li>
+                        <li><strong>Coordinates:</strong> {{.Location.Lat}}, {{.Location.Lon}}</li>
+                        <li><strong>ISP:</strong> {{.Location.ISP}}</li>
+                    {{end}}
+                    <li><strong>Last Updated:</strong> {{.UpdatedAt.Format "2006-01-02 15:04:05"}}</li>
+                </ul>
+            </div>
+
+            <div class="detail-panel">
+                <h2>Capabilities</h2>
+                <ul class="detail-list">
+                    <li><strong>Java:</strong> {{if .IsJava}}Yes{{else}}No{{end}}</li>
+                    <li><strong>Bedrock:</strong> {{if .IsBedrock}}Yes{{else}}No{{end}}</li>
+                    <li><strong>Query (GS4):</strong> {{if .HasQuery}}Yes{{else}}No{{end}}</li>
+                </ul>
+                <div class="tags" aria-label="Server tags">
+                    {{range .GetTags}}
+                        <span class="tag">{{.}}</span>
+                    {{end}}
+                </div>
+            </div>
+        </section>
+
+        {{if .IsJava}}
+            <section class="data-panel" aria-labelledby="java-details-title">
+                <h2 id="java-details-title">Java Details</h2>
+                <pre>{{.Java.MOTD.Clean}}</pre>
+                <ul class="data-list">
+                    <li><strong>Protocol:</strong> {{.Java.Version.Protocol}}</li>
+                    {{if .Java.SRVResult}}
+                        <li><strong>SRV:</strong> {{.Java.SRVResult.Host}}:{{.Java.SRVResult.Port}}</li>
+                    {{end}}
+                </ul>
+            </section>
+        {{end}}
+
+        {{if .IsBedrock}}
+            <section class="data-panel" aria-labelledby="bedrock-details-title">
+                <h2 id="bedrock-details-title">Bedrock Details</h2>
+                {{if .Bedrock.MOTD}}
+                    <pre>{{.Bedrock.MOTD.Clean}}</pre>
+                {{end}}
+                <ul class="data-list">
+                    {{if .Bedrock.Version}}
+                        <li><strong>Version:</strong> {{.Bedrock.Version}}</li>
+                    {{end}}
+                    {{if .Bedrock.ProtocolVersion}}
+                        <li><strong>Protocol:</strong> {{.Bedrock.ProtocolVersion}}</li>
+                    {{end}}
+                    {{if .Bedrock.Gamemode}}
+                        <li><strong>Gamemode:</strong> {{.Bedrock.Gamemode}}</li>
+                    {{end}}
+                    {{if .Bedrock.ServerID}}
+                        <li><strong>Server ID:</strong> {{.Bedrock.ServerID}}</li>
+                    {{end}}
+                </ul>
+            </section>
+        {{end}}
+
+        {{if .HasQuery}}
+            <section class="data-panel" aria-labelledby="query-details-title">
+                <h2 id="query-details-title">Query (GS4) Data</h2>
+                <ul class="data-list">
+                    {{range $k, $v := .Query.Data}}
+                        <li><strong>{{$k}}:</strong> {{$v}}</li>
+                    {{end}}
+                </ul>
+                {{if .Query.Players}}
+                    <h3>Players</h3>
+                    <pre>{{range .Query.Players}}{{.}}
+{{end}}</pre>
+                {{end}}
+            </section>
+        {{end}}
+
+        <section class="data-panel" aria-labelledby="raw-json-title">
+            <h2 id="raw-json-title">Raw JSON</h2>
+            <pre>{{.RawJSON}}</pre>
+        </section>
+    </div>
+{{end}}

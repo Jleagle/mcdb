@@ -1,121 +1,152 @@
 package main
 
 import (
-	"bufio"
+	"context"
 	"encoding/json"
 	"fmt"
-	"log"
-	"net"
-	"net/netip"
 	"os"
-	"sync"
 
-	"github.com/Tnze/go-mc/bot"
-	mcnet "github.com/Tnze/go-mc/net"
-	"github.com/cheggaaa/pb/v3"
+	"github.com/Jleagle/mcdb/scanner"
+	"github.com/Jleagle/mcdb/seeder"
+	"github.com/Jleagle/mcdb/storage"
+	"github.com/Jleagle/mcdb/web"
+	"github.com/spf13/cobra"
 )
 
-const maxGoroutines = 10
-
-var logFile *os.File
-
 func main() {
-
-	mcnet.DefaultDialer = mcnet.Dialer{Dialer: &net.Dialer{}}
-
-	var err error
-	logFile, err = os.OpenFile("servers.txt", os.O_APPEND|os.O_CREATE|os.O_RDWR, 0644)
-	if err != nil {
-		log.Fatal(err)
+	var rootCmd = &cobra.Command{
+		Use:   "mcdb",
+		Short: "Minecraft Server Database",
+		PersistentPreRun: func(cmd *cobra.Command, args []string) {
+			storage.InitDB()
+		},
 	}
 
-	defer log.Fatal(logFile.Close())
-
-	guard := make(chan struct{}, maxGoroutines)
-	bar := pb.StartNew(1 << 32)
-	wg := sync.WaitGroup{}
-	save := load()
-
-	prefix, err := netip.ParsePrefix("0.0.0.0/0")
-	if err != nil {
-		log.Fatal(err)
+	var scanCmd = &cobra.Command{
+		Use:   "scan",
+		Short: "Start the Minecraft server scanner",
+		Run: func(cmd *cobra.Command, args []string) {
+			fmt.Println("Starting scanner...")
+			scanner.Start(storageInterface{})
+		},
 	}
 
-	for addr := prefix.Addr(); prefix.Contains(addr); addr = addr.Next() {
+	var serveCmd = &cobra.Command{
+		Use:   "serve",
+		Short: "Start the web server",
+		Run: func(cmd *cobra.Command, args []string) {
+			fmt.Println("Starting web server and background updater...")
+			go scanner.Updater(storageInterface{})
+			web.Start(storageInterface{})
+		},
+	}
 
-		wg.Add(1)
-		guard <- struct{}{}
-		go func(addr netip.Addr) {
+	var seedCmd = &cobra.Command{
+		Use:   "seed",
+		Short: "Seed the database from known Minecraft server lists",
+	}
 
-			defer func() {
-				bar.Increment()
-				wg.Done()
-				<-guard
-				if addr.Compare(save) == 1 {
-					_, err := logFile.WriteString(addr.String())
-					if err != nil {
-						log.Println(err)
-					}
-				}
-			}()
+	var seedMinecraftMPCmd = &cobra.Command{
+		Use:   "minecraft-mp",
+		Short: "Seed the database by crawling minecraft-mp.com",
+		Run: func(cmd *cobra.Command, args []string) {
+			fmt.Println("Starting minecraft-mp seeder...")
+			seeder.StartMinecraftMP(storageInterface{})
+		},
+	}
 
-			if addr.IsPrivate() || !addr.IsValid() {
-				return
-			}
+	var seedMinecraftServerListCmd = &cobra.Command{
+		Use:   "minecraft-server-list",
+		Short: "Seed the database by crawling minecraft-server-list.com",
+		Run: func(cmd *cobra.Command, args []string) {
+			fmt.Println("Starting minecraft-server-list seeder...")
+			seeder.StartMinecraftServerList(storageInterface{})
+		},
+	}
+	seedCmd.AddCommand(seedMinecraftMPCmd, seedMinecraftServerListCmd)
 
-			if save.Compare(addr) == 1 {
-				return
-			}
+	var probeCmd = &cobra.Command{
+		Use:   "probe [host]",
+		Short: "Probe a specific server for Java, Bedrock and Query data",
+		Args:  cobra.ExactArgs(1),
+		Run: func(cmd *cobra.Command, args []string) {
+			host := args[0]
+			fmt.Printf("Probing %s...\n", host)
 
-			resp, delay, err := bot.PingAndList(fmt.Sprintf("%s:%d", addr.String(), 25565))
+			status, err := scanner.Probe(context.Background(), host, nil)
 			if err != nil {
-
-				if _, ok := err.(bot.LoginErr); ok {
-					return
-				}
-
-				fmt.Println("Ping and list server fail: ", err)
+				fmt.Printf("Error probing: %v\n", err)
 				return
 			}
 
-			var s status
-			err = json.Unmarshal(resp, &s)
+			if status == nil {
+				fmt.Println("No Minecraft server found at this address.")
+				return
+			}
+
+			err = storage.SaveServer(*status)
 			if err != nil {
-				fmt.Println("Parse json response fail:", err)
+				fmt.Printf("Error saving to DB: %v\n", err)
 				return
 			}
 
-			s.Delay = delay
-
-			fmt.Println(addr.String() + " " + s.Description.Text)
-
-		}(addr)
+			fmt.Printf("Successfully probed and saved %s\n", host)
+			out, _ := json.MarshalIndent(status, "", "  ")
+			fmt.Println(string(out))
+		},
 	}
 
-	wg.Wait()
-	bar.Finish()
+	rootCmd.AddCommand(scanCmd, serveCmd, seedCmd, probeCmd)
+
+	if err := rootCmd.Execute(); err != nil {
+		fmt.Println(err)
+		os.Exit(1)
+	}
 }
 
-func load() netip.Addr {
+// storageInterface adapts our storage package to the interfaces required by scanner, web and seeder
+type storageInterface struct{}
 
-	// Get last line
-	var last string
-	scanner := bufio.NewScanner(logFile)
-	for scanner.Scan() {
-		line := scanner.Text()
-		if line != "" {
-			last = line
-		}
-	}
+func (s storageInterface) SaveServer(status scanner.Server) error {
+	return storage.SaveServer(status)
+}
 
-	if err := scanner.Err(); err != nil {
-		log.Fatal(err)
-	}
+func (s storageInterface) SaveIP(ip string) error {
+	return storage.SaveIP(ip)
+}
 
-	addr, err := netip.ParseAddr(last)
-	if err != nil {
-		log.Println(err)
-	}
+func (s storageInterface) SaveLastIP(ip string) error {
+	return storage.SaveLastIP(ip)
+}
 
-	return addr
+func (s storageInterface) LoadLastIP() string {
+	return storage.LoadLastIP()
+}
+
+func (s storageInterface) ListServers(opts storage.ListOptions) ([]scanner.Server, error) {
+	return storage.ListServers(opts)
+}
+
+func (s storageInterface) GetOldestServer() (scanner.Server, error) {
+	return storage.GetOldestServer()
+}
+
+func (s storageInterface) GetServer(ip string) (scanner.Server, error) {
+	return storage.GetServer(ip)
+}
+
+func (s storageInterface) CountServers() (int64, error) {
+	return storage.CountServers()
+}
+
+func (s storageInterface) CountServersWithOptions(opts storage.ListOptions) (int64, error) {
+	return storage.CountServersWithOptions(opts)
+}
+
+func (s storageInterface) CountPlayersOnline() (int64, error) {
+	return storage.CountPlayersOnline()
+}
+
+func (s storageInterface) GetTags() ([]storage.TagCount, error) {
+	return storage.GetTags()
 }

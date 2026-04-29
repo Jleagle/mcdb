@@ -1,0 +1,103 @@
+{{/* gotype: github.com/Jleagle/mcdb/web.IndexTemplateData */}}
+
+{{define "content"}}
+    <header class="page-header">
+        <p class="page-kicker">Browse servers</p>
+        <h1>Minecraft Servers</h1>
+        <p class="page-copy">Explore indexed Java and Bedrock servers, compare player counts, and filter by tags or server metadata.</p>
+    </header>
+
+    <section class="toolbar" aria-label="Server list controls">
+        <div class="page-actions">
+            <a href="/search" class="button-secondary">Advanced Search</a>
+        </div>
+
+        <nav class="sorting" aria-label="Sort servers">
+            <span class="sorting-label">Sort by</span>
+            <a href="/servers?sort=location&ip={{.CurrentIPSearch}}&name={{.CurrentNameSearch}}&tags={{.CurrentTagsSearch}}" class="sort-link {{if eq .CurrentSort "location"}}active{{end}}">Location</a>
+            <a href="/servers?sort=players&ip={{.CurrentIPSearch}}&name={{.CurrentNameSearch}}&tags={{.CurrentTagsSearch}}" class="sort-link {{if eq .CurrentSort "players"}}active{{end}}">Current Players</a>
+            <a href="/servers?sort=max_players&ip={{.CurrentIPSearch}}&name={{.CurrentNameSearch}}&tags={{.CurrentTagsSearch}}" class="sort-link {{if eq .CurrentSort "max_players"}}active{{end}}">Max Players</a>
+            <a href="/servers?sort=random&ip={{.CurrentIPSearch}}&name={{.CurrentNameSearch}}&tags={{.CurrentTagsSearch}}" class="sort-link {{if eq .CurrentSort "random"}}active{{end}}">Random</a>
+            <a href="/servers?sort=added_recently&ip={{.CurrentIPSearch}}&name={{.CurrentNameSearch}}&tags={{.CurrentTagsSearch}}" class="sort-link {{if eq .CurrentSort "added_recently"}}active{{end}}">Recently Added</a>
+            <a href="/servers?ip={{.CurrentIPSearch}}&name={{.CurrentNameSearch}}&tags={{.CurrentTagsSearch}}" class="sort-link {{if or (eq .CurrentSort "") (eq .CurrentSort "updated")}}active{{end}}">Last Updated</a>
+        </nav>
+    </section>
+
+    {{if eq .CurrentSort "location"}}
+        {{if or .UserLat .UserLon}}
+            <p class="location-note">Your approximate location: {{if .UserLocationName}}{{.UserLocationName}} {{end}}(Lat {{.UserLat}}, Lon {{.UserLon}})</p>
+        {{end}}
+    {{end}}
+
+    <section class="server-list" aria-label="Server results">
+        {{range .Servers}}
+            <article class="server-item">
+                <a href="/server/{{.IP}}" class="server-logo-link" aria-label="View {{.IP}}">
+                    {{if .Favicon}}
+                        <img src="{{.Favicon | safe}}" class="favicon" alt="">
+                    {{else}}
+                        <img src="/logo.png" class="favicon" alt="">
+                    {{end}}
+                </a>
+                <div class="details">
+                    <div class="server-title-row">
+                        <a href="/server/{{.IP}}" class="ip">{{.IP}}</a>
+                        {{if .IsOnline}}
+                            <span class="status status-online">Online</span>
+                        {{else}}
+                            <span class="status status-offline">Offline</span>
+                        {{end}}
+                    </div>
+                    <div class="description">{{.MOTD}}</div>
+                    <div class="tags" aria-label="Server tags">
+                        {{range .GetTags}}
+                            <span class="tag">{{.}}</span>
+                        {{end}}
+                    </div>
+                    <div class="players">
+                        <span>Players: {{.Players.Online}}/{{.Players.Max}}</span>
+                        <progress class="progress-bar" value="{{.PlayerPercent}}" max="100" title="{{.PlayerPercent}}%">{{.PlayerPercent}}%</progress>
+                    </div>
+                    {{if and (eq $.CurrentSort "location") (ge .DistanceKM 0.0)}}
+                        <div class="distance">
+                            {{printf "%.0f" .DistanceKM}} km away
+                        </div>
+                    {{end}}
+                </div>
+            </article>
+        {{else}}
+            <div class="empty-state">
+                <h2>No servers found</h2>
+                <p>Try a broader search or clear one of the active filters.</p>
+            </div>
+        {{end}}
+    </section>
+
+    <nav class="pagination" aria-label="Pagination">
+        <div>
+            {{if .HasPrev}}
+                <a href="/servers?page={{.PrevPage}}&sort={{.CurrentSort}}&ip={{.CurrentIPSearch}}&name={{.CurrentNameSearch}}&tags={{.CurrentTagsSearch}}" class="button-secondary">&larr; Previous</a>
+            {{end}}
+        </div>
+        <div class="page-number">
+            Page {{.Page}} of {{.TotalPages}} · {{formatNumber .TotalResults}} results
+        </div>
+        <div>
+            {{if .HasNext}}
+                <a href="/servers?page={{.NextPage}}&sort={{.CurrentSort}}&ip={{.CurrentIPSearch}}&name={{.CurrentNameSearch}}&tags={{.CurrentTagsSearch}}" class="button-secondary">Next &rarr;</a>
+            {{end}}
+        </div>
+    </nav>
+
+    <div class="ad-slot">
+        <ins class="adsbygoogle"
+             data-ad-client="ca-pub-5404647236727916"
+             data-ad-slot="yyyyyyyyyy"
+             data-ad-format="auto"
+             data-full-width-responsive="true"></ins>
+    </div>
+
+    <div class="ad-note">
+        <p>Consider using <a href="{{.UblockLink}}" target="_blank" rel="noopener noreferrer">uBlock Origin</a> to block ads and trackers.</p>
+    </div>
+{{end}}

@@ -1,0 +1,44 @@
+{{/* gotype: github.com/Jleagle/mcdb/web.HomeTemplateData */}}
+
+{{define "content"}}
+    <section class="home-hero" aria-labelledby="home-title">
+        <p class="page-kicker">Minecraft server discovery</p>
+        <h1 id="home-title">Minecraft Server Database</h1>
+        <p>Find servers by address, version, play style, and community tags.</p>
+    </section>
+
+    <div class="search-container">
+        <form action="/servers" method="GET" role="search" aria-label="Search servers">
+            <label class="visually-hidden" for="home-search">Search servers</label>
+            <input type="text" id="home-search" name="q" class="search-input" placeholder="Search by IP, name, version or tags..." autocomplete="off" autofocus>
+        </form>
+    </div>
+
+    <div class="stats-summary" aria-label="Server database totals">
+        <div class="stats-pill">
+            {{formatNumber .TotalServers}} Servers Indexed
+        </div>
+        <div class="stats-pill">
+            {{formatNumber .TotalPlayersOnline}} Players Online
+        </div>
+    </div>
+
+    <section aria-labelledby="tag-heading">
+        <div class="section-heading">
+            <div>
+                <p class="page-kicker">Browse</p>
+                <h2 id="tag-heading">Popular Tags</h2>
+            </div>
+        </div>
+
+        <div class="tag-grid">
+            {{range .Tags}}
+                <a href="/servers?q={{.Name}}" class="tag-card">
+                    <span class="tag-marker" aria-hidden="true"></span>
+                    <span class="tag-name">{{.Name}}</span>
+                    <span class="tag-count">{{.Count}} servers</span>
+                </a>
+            {{end}}
+        </div>
+    </section>
+{{end}}

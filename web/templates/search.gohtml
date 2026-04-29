@@ -1,0 +1,35 @@
+{{/* gotype: github.com/Jleagle/mcdb/web.SearchTemplateData */}}
+
+{{define "content"}}
+    <header class="page-header">
+        <p class="page-kicker">Advanced search</p>
+        <h1>Find a Server</h1>
+        <p class="page-copy">Use targeted fields when you know the address, version, or tags you want to match.</p>
+    </header>
+
+    <section class="form-panel" aria-labelledby="search-form-title">
+        <h2 id="search-form-title">Search Filters</h2>
+        <form action="/servers" method="GET" class="search-form">
+            <div class="form-field">
+                <label for="search-ip">IP Address</label>
+                <input type="text" id="search-ip" name="ip" class="search-input search-input-compact" placeholder="example.com or 192.168.1.1" value="{{.IP}}" autocomplete="off">
+                <p class="field-help">Matches server hostnames and saved IP addresses.</p>
+            </div>
+            <div class="form-field">
+                <label for="search-name">Name or Version</label>
+                <input type="text" id="search-name" name="name" class="search-input search-input-compact" placeholder="Hypixel or 1.20.1" value="{{.Name}}" autocomplete="off">
+                <p class="field-help">Searches indexed version and naming metadata.</p>
+            </div>
+            <div class="form-field">
+                <label for="search-tags">Tags</label>
+                <input type="text" id="search-tags" name="tags" class="search-input search-input-compact" placeholder="survival, pvp" value="{{.Tags}}" autocomplete="off">
+                <p class="field-help">Use comma-separated tags to narrow the result set.</p>
+            </div>
+            <button type="submit" class="button-primary">Search Servers</button>
+        </form>
+    </section>
+
+    <div class="back-link">
+        <a href="/servers" class="button-secondary">&larr; Back to all servers</a>
+    </div>
+{{end}}

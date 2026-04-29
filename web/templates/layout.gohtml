@@ -1,0 +1,54 @@
+{{/* gotype: github.com/Jleagle/mcdb/web.templateContext */}}
+
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>{{.Data.Title}} - Minecraft Server DB</title>
+    <meta name="description" content="{{.Data.Description}}">
+    <meta name="robots" content="index, follow">
+    <link rel="canonical" href="{{.Data.CanonicalURL}}">
+    <meta name="google-adsense-account" content="ca-pub-5404647236727916">
+
+    <!-- Open Graph / Facebook -->
+    <meta property="og:type" content="website">
+    <meta property="og:url" content="{{.Data.CanonicalURL}}">
+    <meta property="og:title" content="{{.Data.Title}} - Minecraft Server DB">
+    <meta property="og:description" content="{{.Data.Description}}">
+    <meta property="og:image" content="{{.Data.OGImage}}">
+
+    <!-- Twitter -->
+    <meta property="twitter:card" content="summary_large_image">
+    <meta property="twitter:url" content="{{.Data.CanonicalURL}}">
+    <meta property="twitter:title" content="{{.Data.Title}} - Minecraft Server DB">
+    <meta property="twitter:description" content="{{.Data.Description}}">
+    <meta property="twitter:image" content="{{.Data.TwitterImage}}">
+
+    <link rel="stylesheet" href="/styles.css">
+    <script src="/app.js" defer></script>
+</head>
+<body>
+<a href="#main-content" class="skip-link">Skip to content</a>
+<div class="container">
+    <nav class="site-nav" aria-label="Primary navigation">
+        <div class="nav-primary">
+            <a href="/" class="logo-link" aria-label="MCDB home">
+                <img src="/logo.png" alt="">
+            </a>
+            <div class="nav-links">
+                <a href="/" class="brand-link {{if eq .CurrentNav "home"}}active{{end}}"{{if eq .CurrentNav "home"}} aria-current="page"{{end}}>MCDB</a>
+                <a href="/servers" class="{{if eq .CurrentNav "servers"}}active{{end}}"{{if eq .CurrentNav "servers"}} aria-current="page"{{end}}>Browse Servers</a>
+                <a href="/search" class="{{if eq .CurrentNav "search"}}active{{end}}"{{if eq .CurrentNav "search"}} aria-current="page"{{end}}>Advanced Search</a>
+            </div>
+        </div>
+        <button id="theme-toggle" class="theme-toggle" type="button" aria-label="Toggle theme" aria-pressed="false">
+            Dark
+        </button>
+    </nav>
+    <main id="main-content" class="page-shell">
+        {{template "content" .Data}}
+    </main>
+</div>
+</body>
+</html>
