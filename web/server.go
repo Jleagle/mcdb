@@ -50,9 +50,9 @@ func serverHandler(store Storage) http.HandlerFunc {
 			BasePageData: BasePageData{
 				Title:        "Minecraft Server: " + server.IP,
 				Description:  description,
-				CanonicalURL: "http://" + r.Host + r.URL.Path,
 				OGImage:      ogImage,
 				TwitterImage: ogImage,
+				CanonicalURL: "https://" + r.Host + r.URL.Path,
 			},
 			Server:  server,
 			RawJSON: string(raw),

@@ -15,9 +15,9 @@ func connectHandler() http.HandlerFunc {
 			BasePageData: BasePageData{
 				Title:        "How to Connect to a Minecraft Server",
 				Description:  "Learn how to connect to any Minecraft server on Java and Bedrock editions. A step-by-step guide for new and experienced players.",
-				CanonicalURL: "http://" + r.Host + r.URL.Path,
-				OGImage:      "http://" + r.Host + "/logo.png",
-				TwitterImage: "http://" + r.Host + "/logo.png",
+				CanonicalURL: "https://" + r.Host + r.URL.Path,
+				OGImage:      "https://" + r.Host + "/logo.png",
+				TwitterImage: "https://" + r.Host + "/logo.png",
 			},
 		}
 

@@ -17,22 +17,25 @@ type ServerWithDistance struct {
 // IndexTemplateData holds data for the server listing page.
 type IndexTemplateData struct {
 	BasePageData
-	Servers           []ServerWithDistance
-	Page              int
-	HasPrev           bool
-	HasNext           bool
-	PrevPage          int
-	NextPage          int
-	TotalPages        int
-	TotalResults      int64
-	CurrentSort       string
-	UserLat           float64
-	UserLon           float64
-	UserLocationName  string
-	CurrentIPSearch   string
-	CurrentNameSearch string
-	CurrentTagsSearch string
-	UblockLink        string // New field for the uBlock Origin link
+	Servers              []ServerWithDistance
+	Page                 int
+	HasPrev              bool
+	HasNext              bool
+	PrevPage             int
+	NextPage             int
+	TotalPages           int
+	TotalResults         int64
+	CurrentSort          string
+	UserLat              float64
+	UserLon              float64
+	UserLocationName     string
+	CurrentIPSearch      string
+	CurrentNameSearch    string
+	CurrentTagsSearch    string
+	CurrentVersionSearch string
+	CurrentCountrySearch string
+	CurrentPrivacySearch string
+	UblockLink           string // New field for the uBlock Origin link
 }
 
 func indexHandler(store Storage) http.HandlerFunc {
@@ -47,20 +50,27 @@ func indexHandler(store Storage) http.HandlerFunc {
 		if sort == "" {
 			sort = "players"
 		}
+
 		ipSearch := r.URL.Query().Get("ip")
 		nameSearch := r.URL.Query().Get("name")
 		tagsSearch := r.URL.Query().Get("tags")
+		versionSearch := r.URL.Query().Get("version")
+		countrySearch := r.URL.Query().Get("country")
+		privacySearch := r.URL.Query().Get("privacy")
 
 		limit := int64(20)
 		offset := int64(page-1) * limit
 
 		opts := storage.ListOptions{
-			Limit:  limit,
-			Offset: offset,
-			Sort:   sort,
-			IP:     ipSearch,
-			Name:   nameSearch,
-			Tags:   tagsSearch,
+			Limit:   limit,
+			Offset:  offset,
+			Sort:    sort,
+			IP:      ipSearch,
+			Name:    nameSearch,
+			Tags:    tagsSearch,
+			Version: versionSearch,
+			Country: countrySearch,
+			Privacy: privacySearch,
 		}
 
 		var userLocationName string
@@ -90,24 +100,17 @@ func indexHandler(store Storage) http.HandlerFunc {
 		}
 
 		// Calculate distances if sorting by location
-		var serversWithDistance []ServerWithDistance
-		if sort == "location" && opts.Lat != 0 && opts.Lon != 0 {
-			serversWithDistance = make([]ServerWithDistance, len(servers))
-			for i, s := range servers {
-				sd := ServerWithDistance{Server: s} // Initialize with the scanner.Server
+		var serversWithDistance = make([]ServerWithDistance, len(servers))
+		for i, s := range servers {
+			sd := ServerWithDistance{Server: s}
+			if sort == "location" && opts.Lat != 0 && opts.Lon != 0 {
 				if s.Location != nil && s.Location.Lat != 0 && s.Location.Lon != 0 {
 					sd.DistanceKM = haversineDistance(opts.Lat, opts.Lon, s.Location.Lat, s.Location.Lon)
 				} else {
-					sd.DistanceKM = -1.0 // Indicate no distance could be calculated
+					sd.DistanceKM = -1.0
 				}
-				serversWithDistance[i] = sd
 			}
-		} else {
-			// If not sorting by location, just wrap the existing servers
-			serversWithDistance = make([]ServerWithDistance, len(servers))
-			for i, s := range servers {
-				serversWithDistance[i] = ServerWithDistance{Server: s}
-			}
+			serversWithDistance[i] = sd
 		}
 
 		total, err := store.CountServersWithOptions(opts)
@@ -120,40 +123,44 @@ func indexHandler(store Storage) http.HandlerFunc {
 			totalPages = 1
 		}
 
-		ublockLink := "https://ublockorigin.com/" // Default fallback
-		userAgent := r.Header.Get("User-Agent")
-		if strings.Contains(userAgent, "Firefox") {
-			ublockLink = "https://addons.mozilla.org/en-US/firefox/addon/ublock-origin/"
-		} else if strings.Contains(userAgent, "Edg") {
-			ublockLink = "https://microsoftedge.microsoft.com/addons/detail/ublock-origin/odfafepnkmbhccpbejgmiehpchacaeak"
-		} else if strings.Contains(userAgent, "Chrome") {
-			ublockLink = "https://chromewebstore.google.com/detail/ublock-origin-lite/ddkjiahejlhfcafbddmgiahcphecmpfh"
-		}
-
 		data := IndexTemplateData{
 			BasePageData: BasePageData{
 				Title:        "Minecraft Server List",
 				Description:  "Browse all Minecraft servers, sorted by " + sort + ".",
-				CanonicalURL: "http://" + r.Host + r.URL.RequestURI(),
-				OGImage:      "http://" + r.Host + "/logo.png",
-				TwitterImage: "http://" + r.Host + "/logo.png",
+				CanonicalURL: "https://" + r.Host + r.URL.RequestURI(),
+				OGImage:      "https://" + r.Host + "/logo.png",
+				TwitterImage: "https://" + r.Host + "/logo.png",
 			},
-			Servers:           serversWithDistance,
-			Page:              page,
-			HasPrev:           page > 1,
-			HasNext:           offset+limit < total,
-			PrevPage:          page - 1,
-			NextPage:          page + 1,
-			TotalPages:        totalPages,
-			TotalResults:      total,
-			CurrentSort:       sort,
-			UserLat:           opts.Lat,
-			UserLon:           opts.Lon,
-			UserLocationName:  userLocationName,
-			CurrentIPSearch:   ipSearch,
-			CurrentNameSearch: nameSearch,
-			CurrentTagsSearch: tagsSearch,
-			UblockLink:        ublockLink, // Pass the determined link
+			Servers:              serversWithDistance,
+			Page:                 page,
+			HasPrev:              page > 1,
+			HasNext:              offset+limit < total,
+			PrevPage:             page - 1,
+			NextPage:             page + 1,
+			TotalPages:           totalPages,
+			TotalResults:         total,
+			CurrentSort:          sort,
+			UserLat:              opts.Lat,
+			UserLon:              opts.Lon,
+			UserLocationName:     userLocationName,
+			CurrentIPSearch:      ipSearch,
+			CurrentNameSearch:    nameSearch,
+			CurrentTagsSearch:    tagsSearch,
+			CurrentVersionSearch: versionSearch,
+			CurrentCountrySearch: countrySearch,
+			CurrentPrivacySearch: privacySearch,
+		}
+
+		userAgent := r.Header.Get("User-Agent")
+		switch {
+		case strings.Contains(userAgent, "Firefox"):
+			data.UblockLink = "https://addons.mozilla.org/en-US/firefox/addon/ublock-origin/"
+		case strings.Contains(userAgent, "Edg"):
+			data.UblockLink = "https://microsoftedge.microsoft.com/addons/detail/ublock-origin/odfafepnkmbhccpbejgmiehpchacaeak"
+		case strings.Contains(userAgent, "Chrome"):
+			data.UblockLink = "https://chromewebstore.google.com/detail/ublock-origin-lite/ddkjiahejlhfcafbddmgiahcphecmpfh"
+		default:
+			data.UblockLink = "https://ublockorigin.com/"
 		}
 
 		renderTemplate(w, r, "index.gohtml", data)

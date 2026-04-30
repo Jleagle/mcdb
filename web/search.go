@@ -18,9 +18,9 @@ func searchHandler(store Storage) http.HandlerFunc {
 			BasePageData: BasePageData{
 				Title:        "Advanced Minecraft Server Search",
 				Description:  "Search Minecraft servers by IP, name, version, or tags using advanced filters.",
-				CanonicalURL: "http://" + r.Host + r.URL.Path,
-				OGImage:      "http://" + r.Host + "/logo.png",
-				TwitterImage: "http://" + r.Host + "/logo.png",
+				CanonicalURL: "https://" + r.Host + r.URL.Path,
+				OGImage:      "https://" + r.Host + "/logo.png",
+				TwitterImage: "https://" + r.Host + "/logo.png",
 			},
 			IP:   r.URL.Query().Get("ip"),
 			Name: r.URL.Query().Get("name"),

@@ -64,7 +64,7 @@ func renderTemplate(w http.ResponseWriter, r *http.Request, tmplName string, dat
 
 	templateData := templateContext{
 		Data:       data,
-		BaseURL:    "http://" + r.Host,
+		BaseURL:    "https://" + r.Host,
 		CurrentNav: currentNav(r.URL.Path),
 	}
 

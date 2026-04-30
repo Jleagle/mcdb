@@ -29,9 +29,9 @@ func homeHandler(store Storage) http.HandlerFunc {
 			BasePageData: BasePageData{
 				Title:        "Homepage",
 				Description:  "Find the best Minecraft servers. Search by IP, name, version, or tags. Discover new servers with our comprehensive database.",
-				CanonicalURL: "http://" + r.Host + r.URL.Path,
-				OGImage:      "http://" + r.Host + "/logo.png",
-				TwitterImage: "http://" + r.Host + "/logo.png",
+				CanonicalURL: "https://" + r.Host + r.URL.Path,
+				OGImage:      "https://" + r.Host + "/logo.png",
+				TwitterImage: "https://" + r.Host + "/logo.png",
 			},
 			TotalServers:       total,
 			TotalPlayersOnline: playersOnline,
