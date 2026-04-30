@@ -7,9 +7,12 @@ import (
 // SearchTemplateData holds data for the search page.
 type SearchTemplateData struct {
 	BasePageData
-	IP   string
-	Name string
-	Tags string
+	IP      string
+	Name    string
+	Tags    string
+	Version string
+	Country string
+	Privacy string
 }
 
 func searchHandler(store Storage) http.HandlerFunc {
@@ -22,9 +25,12 @@ func searchHandler(store Storage) http.HandlerFunc {
 				OGImage:      "https://" + r.Host + "/logo.png",
 				TwitterImage: "https://" + r.Host + "/logo.png",
 			},
-			IP:   r.URL.Query().Get("ip"),
-			Name: r.URL.Query().Get("name"),
-			Tags: r.URL.Query().Get("tags"),
+			IP:      r.URL.Query().Get("ip"),
+			Name:    r.URL.Query().Get("name"),
+			Tags:    r.URL.Query().Get("tags"),
+			Version: r.URL.Query().Get("version"),
+			Country: r.URL.Query().Get("country"),
+			Privacy: r.URL.Query().Get("privacy"),
 		}
 
 		renderTemplate(w, r, "search.gohtml", data)

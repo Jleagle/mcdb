@@ -102,14 +102,17 @@ func SaveIP(ip string) (bool, error) {
 }
 
 type ListOptions struct {
-	Limit  int64
-	Offset int64
-	Sort   string
-	Lat    float64
-	Lon    float64
-	IP     string
-	Name   string
-	Tags   string
+	Limit   int64
+	Offset  int64
+	Sort    string
+	Lat     float64
+	Lon     float64
+	IP      string
+	Name    string
+	Tags    string
+	Version string
+	Country string
+	Privacy string
 }
 
 func ListServers(opts ListOptions) ([]scanner.Server, error) {
@@ -252,8 +255,36 @@ func listFilter(opts ListOptions) bson.M {
 		andFilters = append(andFilters, ipFilter)
 	}
 	if opts.Name != "" {
-		nameFilter := bson.M{"data.version.name": bson.M{"$regex": opts.Name, "$options": "i"}}
+		nameFilter := bson.M{"data.java.motd.clean": bson.M{"$regex": opts.Name, "$options": "i"}} // Search MOTD for name
 		andFilters = append(andFilters, nameFilter)
+	}
+	if opts.Version != "" {
+		versionFilter := bson.M{"data.version.name": bson.M{"$regex": opts.Version, "$options": "i"}}
+		andFilters = append(andFilters, versionFilter)
+	}
+	if opts.Country != "" {
+		countryFilter := bson.M{"$or": []bson.M{
+			{"data.location.country": bson.M{"$regex": opts.Country, "$options": "i"}},
+			{"data.location.country_code": bson.M{"$regex": opts.Country, "$options": "i"}},
+		}}
+		andFilters = append(andFilters, countryFilter)
+	}
+	if opts.Privacy != "" {
+		if opts.Privacy == "private" {
+			privacyFilter := bson.M{"$or": []bson.M{
+				{"data.java.motd.clean": bson.M{"$regex": "whitelist|private|invite only", "$options": "i"}},
+				{"data.bedrock.motd.clean": bson.M{"$regex": "whitelist|private|invite only", "$options": "i"}},
+				{"data.version.name": bson.M{"$regex": "whitelist", "$options": "i"}},
+			}}
+			andFilters = append(andFilters, privacyFilter)
+		} else if opts.Privacy == "public" {
+			privacyFilter := bson.M{"$and": []bson.M{
+				{"data.java.motd.clean": bson.M{"$not": bson.M{"$regex": "whitelist|private|invite only", "$options": "i"}}},
+				{"data.bedrock.motd.clean": bson.M{"$not": bson.M{"$regex": "whitelist|private|invite only", "$options": "i"}}},
+				{"data.version.name": bson.M{"$not": bson.M{"$regex": "whitelist", "$options": "i"}}},
+			}}
+			andFilters = append(andFilters, privacyFilter)
+		}
 	}
 	if opts.Tags != "" {
 		tags := strings.Split(opts.Tags, ",")

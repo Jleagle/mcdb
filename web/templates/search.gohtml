@@ -16,20 +16,36 @@
                 <p class="field-help">Matches server hostnames and saved IP addresses.</p>
             </div>
             <div class="form-field">
-                <label for="search-name">Name or Version</label>
-                <input type="text" id="search-name" name="name" class="search-input search-input-compact" placeholder="Hypixel or 1.20.1" value="{{.Name}}" autocomplete="off">
-                <p class="field-help">Searches indexed version and naming metadata.</p>
+                <label for="search-name">Name</label>
+                <input type="text" id="search-name" name="name" class="search-input search-input-compact" placeholder="Hypixel" value="{{.Name}}" autocomplete="off">
+                <p class="field-help">Searches indexed naming metadata.</p>
+            </div>
+            <div class="form-field">
+                <label for="search-version">Minecraft Version</label>
+                <input type="text" id="search-version" name="version" class="search-input search-input-compact" placeholder="1.21.1" value="{{.Version}}" autocomplete="off">
+                <p class="field-help">Filter by a specific Minecraft version.</p>
+            </div>
+            <div class="form-field">
+                <label for="search-country">Country</label>
+                <input type="text" id="search-country" name="country" class="search-input search-input-compact" placeholder="Germany or DE" value="{{.Country}}" autocomplete="off">
+                <p class="field-help">Filter by country name or two-letter code.</p>
             </div>
             <div class="form-field">
                 <label for="search-tags">Tags</label>
                 <input type="text" id="search-tags" name="tags" class="search-input search-input-compact" placeholder="survival, pvp" value="{{.Tags}}" autocomplete="off">
                 <p class="field-help">Use comma-separated tags to narrow the result set.</p>
             </div>
+            <div class="form-field">
+                <label for="search-privacy">Access</label>
+                <select id="search-privacy" name="privacy" class="search-input search-input-compact">
+                    <option value="" {{if eq .Privacy ""}}selected{{end}}>All</option>
+                    <option value="public" {{if eq .Privacy "public"}}selected{{end}}>Public Only</option>
+                    <option value="private" {{if eq .Privacy "private"}}selected{{end}}>Private (Whitelist) Only</option>
+                </select>
+                <p class="field-help">Filter by server access type.</p>
+            </div>
             <button type="submit" class="button-primary">Search Servers</button>
         </form>
     </section>
 
-    <div class="back-link">
-        <a href="/servers" class="button-secondary">&larr; Back to all servers</a>
-    </div>
 {{end}}
