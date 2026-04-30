@@ -5,6 +5,7 @@ import (
 	"encoding/json"
 	"fmt"
 	"log"
+	"net"
 	"net/http"
 	"sync"
 	"time"
@@ -27,6 +28,11 @@ type ipAPIResponse struct {
 }
 
 func GetLocation(ip string) (*Location, error) {
+	// Remove port if present
+	if host, _, err := net.SplitHostPort(ip); err == nil {
+		ip = host
+	}
+
 	// Check cache
 	if val, ok := locationCache.Load(ip); ok {
 		return val.(*Location), nil
