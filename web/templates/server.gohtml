@@ -1,6 +1,24 @@
 {{/* gotype: github.com/Jleagle/mcdb/web.ServerTemplateData */}}
 
 {{define "content"}}
+    <script type="application/ld+json">
+    {
+        "@context": "https://schema.org",
+        "@type": "GameServer",
+        "name": "{{.IP}}",
+        "description": "{{.Description}}",
+        "image": "{{.OGImage}}",
+        "url": "{{.CanonicalURL}}",
+        "serverStatus": "{{if .IsOnline}}https://schema.org/OnlineFull{{else}}https://schema.org/OfflinePermanently{{end}}",
+        "game": {
+            "@type": "VideoGame",
+            "name": "Minecraft",
+            "gamePlatform": ["PC", "Android", "iOS", "Xbox", "PlayStation"]
+        },
+        "playersOnline": {{.Players.Online}}
+    }
+    </script>
+
     <nav class="breadcrumbs" aria-label="Breadcrumb">
         <ol>
             <li><a href="/">Home</a></li>

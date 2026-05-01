@@ -1,23 +1,25 @@
 package web
 
 import (
+	"cmp"
 	"encoding/json"
 	"fmt"
 	"net/http"
 	"strings"
 
-	"github.com/Jleagle/mcdb/scanner"
+	"github.com/Jleagle/mcdb/storage"
 )
 
 // ServerTemplateData holds data for the server detail page.
 type ServerTemplateData struct {
 	BasePageData
-	scanner.Server
+	storage.Server
 	RawJSON string
 }
 
 func serverHandler(store Storage) http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
+
 		ip := strings.TrimPrefix(r.URL.Path, "/server/")
 		if ip == "" {
 			http.Redirect(w, r, "/", http.StatusFound)
@@ -41,18 +43,16 @@ func serverHandler(store Storage) http.HandlerFunc {
 			description += fmt.Sprintf(" Located in %s, %s.", server.Location.City, server.Location.Country)
 		}
 
-		ogImage := "http://" + r.Host + "/logo.png"
-		if server.Favicon != "" {
-			ogImage = string(server.Favicon) // Favicon is already a data URL or valid image link
-		}
+		title := fmt.Sprintf("%s - Minecraft Server (%s) | %d/%d Players",
+			server.IP, server.Version.Name, server.Players.Online, server.Players.Max)
 
 		data := ServerTemplateData{
 			BasePageData: BasePageData{
-				Title:        "Minecraft Server: " + server.IP,
+				Title:        title,
 				Description:  description,
-				OGImage:      ogImage,
-				TwitterImage: ogImage,
 				CanonicalURL: "https://" + r.Host + r.URL.Path,
+				OGImage:      cmp.Or(string(server.Favicon), "https://"+r.Host+"/logo.png"),
+				TwitterImage: cmp.Or(string(server.Favicon), "https://"+r.Host+"/logo.png"),
 			},
 			Server:  server,
 			RawJSON: string(raw),
