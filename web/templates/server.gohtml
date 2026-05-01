@@ -58,6 +58,9 @@
                         <strong>Players:</strong> {{.Players.Online}} / {{.Players.Max}}
                         <progress class="progress-bar progress-bar-compact" value="{{.PlayerPercent}}" max="100" title="{{.PlayerPercent}}%">{{.PlayerPercent}}%</progress>
                     </li>
+                    {{if .Gamemode}}
+                        <li><strong>Gamemode:</strong> {{.Gamemode}}</li>
+                    {{end}}
                     <li><strong>Latency:</strong> {{.Delay}}</li>
                     {{if .Location}}
                         <li><strong>Location:</strong> {{.Location.City}}, {{.Location.Country}} ({{.Location.CountryCode}})</li>
@@ -71,6 +74,7 @@
             <div class="detail-panel">
                 <h2>Capabilities</h2>
                 <ul class="detail-list">
+                    <li><strong>Access:</strong> {{if .IsPrivate}}Private (Whitelist){{else}}Public{{end}}</li>
                     <li><strong>Java:</strong> {{if .IsJava}}Yes{{else}}No{{end}}</li>
                     <li><strong>Bedrock:</strong> {{if .IsBedrock}}Yes{{else}}No{{end}}</li>
                     <li><strong>Query (GS4):</strong> {{if .HasQuery}}Yes{{else}}No{{end}}</li>

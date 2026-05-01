@@ -1,4 +1,4 @@
-package scanner
+package storage
 
 import (
 	"encoding/base64"
@@ -145,4 +145,30 @@ func (s Server) PlayerPercent() int {
 		return 0
 	}
 	return int(float64(s.Players.Online) / float64(s.Players.Max) * 100)
+}
+
+func (s Server) Gamemode() string {
+	if s.Bedrock != nil && s.Bedrock.Gamemode != nil {
+		return *s.Bedrock.Gamemode
+	}
+	if s.Query != nil {
+		if gm, ok := s.Query.Data["gametype"]; ok && gm != "" {
+			return gm
+		}
+		if gm, ok := s.Query.Data["map"]; ok && gm != "" {
+			return gm
+		}
+	}
+	return ""
+}
+
+func (s Server) IsPrivate() bool {
+	motd := strings.ToLower(s.MOTD())
+	if strings.Contains(motd, "whitelist") || strings.Contains(motd, "private") || strings.Contains(motd, "invite only") {
+		return true
+	}
+	if s.Java != nil && strings.Contains(strings.ToLower(s.Java.Version.NameClean), "whitelist") {
+		return true
+	}
+	return false
 }
