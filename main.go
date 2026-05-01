@@ -135,6 +135,10 @@ func (s storageInterface) GetServer(ip string) (scanner.Server, error) {
 	return storage.GetServer(ip)
 }
 
+func (s storageInterface) GetServerIPs() ([]storage.IPWithDate, error) {
+	return storage.GetServerIPs()
+}
+
 func (s storageInterface) CountServers() (int64, error) {
 	return storage.CountServers()
 }

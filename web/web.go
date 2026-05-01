@@ -25,6 +25,7 @@ type BasePageData struct {
 type Storage interface {
 	ListServers(opts storage.ListOptions) ([]scanner.Server, error)
 	GetServer(ip string) (scanner.Server, error)
+	GetServerIPs() ([]storage.IPWithDate, error)
 	CountServers() (int64, error)
 	CountServersWithOptions(opts storage.ListOptions) (int64, error)
 	CountPlayersOnline() (int64, error)
@@ -46,6 +47,7 @@ func Start(store Storage) {
 	mux.HandleFunc("/search", searchHandler(store))
 	mux.HandleFunc("/server/", serverHandler(store))
 	mux.HandleFunc("/connect", connectHandler())
+	mux.HandleFunc("/sitemap.xml", sitemapHandler(store))
 
 	// Register asset handler
 	RegisterAssetHandler(mux)

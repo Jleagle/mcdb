@@ -321,6 +321,40 @@ func GetOldestServer() (scanner.Server, error) {
 }
 
 func GetServer(ip string) (scanner.Server, error) {
+type IPWithDate struct {
+	IP        string
+	UpdatedAt time.Time
+}
+
+func GetServerIPs() ([]IPWithDate, error) {
+	ctx, cancel := context.WithTimeout(context.Background(), 30*time.Second)
+	defer cancel()
+
+	opts := options.Find().SetProjection(bson.M{"_id": 1, "updated_at": 1})
+	cursor, err := serversCol.Find(ctx, bson.M{}, opts)
+	if err != nil {
+		return nil, err
+	}
+	defer cursor.Close(ctx)
+
+	var results []struct {
+		ID        string    `bson:"_id"`
+		UpdatedAt time.Time `bson:"updated_at"`
+	}
+	if err := cursor.All(ctx, &results); err != nil {
+		return nil, err
+	}
+
+	ips := make([]IPWithDate, len(results))
+	for i, r := range results {
+		ips[i] = IPWithDate{
+			IP:        r.ID,
+			UpdatedAt: r.UpdatedAt,
+		}
+	}
+	return ips, nil
+}
+
 	ctx, cancel := context.WithTimeout(context.Background(), 5*time.Second)
 	defer cancel()
 
