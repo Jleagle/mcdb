@@ -1,6 +1,14 @@
 {{/* gotype: github.com/Jleagle/mcdb/web.ServerTemplateData */}}
 
 {{define "content"}}
+    <nav class="breadcrumbs" aria-label="Breadcrumb">
+        <ol>
+            <li><a href="/">Home</a></li>
+            <li><a href="/servers">Servers</a></li>
+            <li aria-current="page">{{.IP}}</li>
+        </ol>
+    </nav>
+
     <section class="server-hero" aria-labelledby="server-title">
         {{if .Favicon}}
             <img src="{{.Favicon | safe}}" class="server-icon" alt="">
