@@ -38,13 +38,14 @@
             </a>
             <div class="nav-links">
                 <a href="/" class="brand-link {{if eq .CurrentNav "home"}}active{{end}}"{{if eq .CurrentNav "home"}} aria-current="page"{{end}}>MCDB</a>
-                <a href="/servers" class="{{if eq .CurrentNav "servers"}}active{{end}}"{{if eq .CurrentNav "servers"}} aria-current="page"{{end}}>Browse Servers</a>
-                <a href="/search" class="{{if eq .CurrentNav "search"}}active{{end}}"{{if eq .CurrentNav "search"}} aria-current="page"{{end}}>Advanced Search</a>
+                <a href="/servers" class="{{if eq .CurrentNav "servers"}}active{{end}}"{{if eq .CurrentNav "servers"}} aria-current="page"{{end}}>Servers</a>
+                <a href="/search" class="{{if eq .CurrentNav "search"}}active{{end}}"{{if eq .CurrentNav "search"}} aria-current="page"{{end}}>Search</a>
                 <a href="/connect" class="{{if eq .CurrentNav "connect"}}active{{end}}"{{if eq .CurrentNav "connect"}} aria-current="page"{{end}}>How to Connect</a>
             </div>
         </div>
         <button id="theme-toggle" class="theme-toggle" type="button" aria-label="Toggle theme" aria-pressed="false">
-            Dark
+            <svg class="sun-icon" xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="5"/><line x1="12" y1="1" x2="12" y2="3"/><line x1="12" y1="21" x2="12" y2="23"/><line x1="4.22" y1="4.22" x2="5.64" y2="5.64"/><line x1="18.36" y1="18.36" x2="19.78" y2="19.78"/><line x1="1" y1="12" x2="3" y2="12"/><line x1="21" y1="12" x2="23" y2="12"/><line x1="4.22" y1="19.78" x2="5.64" y2="18.36"/><line x1="18.36" y1="5.64" x2="19.78" y2="4.22"></svg>
+            <svg class="moon-icon" xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z"></path></svg>
         </button>
     </nav>
     <main id="main-content" class="page-shell">

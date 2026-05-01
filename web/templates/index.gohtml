@@ -15,19 +15,23 @@
     </header>
 
     <section class="toolbar" aria-label="Server list controls">
-        <div class="page-actions">
-            <a href="/search" class="button-secondary">Advanced Search</a>
+        <div class="toolbar-row">
+            <nav class="sorting" aria-label="Sort servers">
+                <span class="sorting-label">Sort by</span>
+                <a href="/servers?sort=location&ip={{.CurrentIPSearch}}&name={{.CurrentNameSearch}}&tags={{.CurrentTagsSearch}}&version={{.CurrentVersionSearch}}&country={{.CurrentCountrySearch}}&privacy={{.CurrentPrivacySearch}}&online={{if .OnlineOnly}}1{{else}}0{{end}}" class="sort-link {{if eq .CurrentSort "location"}}active{{end}}">Location</a>
+                <a href="/servers?sort=players&ip={{.CurrentIPSearch}}&name={{.CurrentNameSearch}}&tags={{.CurrentTagsSearch}}&version={{.CurrentVersionSearch}}&country={{.CurrentCountrySearch}}&privacy={{.CurrentPrivacySearch}}&online={{if .OnlineOnly}}1{{else}}0{{end}}" class="sort-link {{if eq .CurrentSort "players"}}active{{end}}">Current Players</a>
+                <a href="/servers?sort=max_players&ip={{.CurrentIPSearch}}&name={{.CurrentNameSearch}}&tags={{.CurrentTagsSearch}}&version={{.CurrentVersionSearch}}&country={{.CurrentCountrySearch}}&privacy={{.CurrentPrivacySearch}}&online={{if .OnlineOnly}}1{{else}}0{{end}}" class="sort-link {{if eq .CurrentSort "max_players"}}active{{end}}">Max Players</a>
+                <a href="/servers?sort=random&ip={{.CurrentIPSearch}}&name={{.CurrentNameSearch}}&tags={{.CurrentTagsSearch}}&version={{.CurrentVersionSearch}}&country={{.CurrentCountrySearch}}&privacy={{.CurrentPrivacySearch}}&online={{if .OnlineOnly}}1{{else}}0{{end}}" class="sort-link {{if eq .CurrentSort "random"}}active{{end}}">Random</a>
+                <a href="/servers?sort=added_recently&ip={{.CurrentIPSearch}}&name={{.CurrentNameSearch}}&tags={{.CurrentTagsSearch}}&version={{.CurrentVersionSearch}}&country={{.CurrentCountrySearch}}&privacy={{.CurrentPrivacySearch}}&online={{if .OnlineOnly}}1{{else}}0{{end}}" class="sort-link {{if eq .CurrentSort "added_recently"}}active{{end}}">Recently Added</a>
+                <a href="/servers?ip={{.CurrentIPSearch}}&name={{.CurrentNameSearch}}&tags={{.CurrentTagsSearch}}&version={{.CurrentVersionSearch}}&country={{.CurrentCountrySearch}}&privacy={{.CurrentPrivacySearch}}&online={{if .OnlineOnly}}1{{else}}0{{end}}" class="sort-link {{if or (eq .CurrentSort "") (eq .CurrentSort "updated")}}active{{end}}">Last Updated</a>
+            </nav>
+            <div class="sorting">
+                <span class="sorting-label">Filter</span>
+                <a href="/servers?sort={{.CurrentSort}}&ip={{.CurrentIPSearch}}&name={{.CurrentNameSearch}}&tags={{.CurrentTagsSearch}}&version={{.CurrentVersionSearch}}&country={{.CurrentCountrySearch}}&privacy={{.CurrentPrivacySearch}}&online={{if .OnlineOnly}}0{{else}}1{{end}}" class="sort-link {{if .OnlineOnly}}active{{end}}">
+                    {{if .OnlineOnly}}Online Only{{else}}All Servers{{end}}
+                </a>
+            </div>
         </div>
-
-        <nav class="sorting" aria-label="Sort servers">
-            <span class="sorting-label">Sort by</span>
-            <a href="/servers?sort=location&ip={{.CurrentIPSearch}}&name={{.CurrentNameSearch}}&tags={{.CurrentTagsSearch}}" class="sort-link {{if eq .CurrentSort "location"}}active{{end}}">Location</a>
-            <a href="/servers?sort=players&ip={{.CurrentIPSearch}}&name={{.CurrentNameSearch}}&tags={{.CurrentTagsSearch}}" class="sort-link {{if eq .CurrentSort "players"}}active{{end}}">Current Players</a>
-            <a href="/servers?sort=max_players&ip={{.CurrentIPSearch}}&name={{.CurrentNameSearch}}&tags={{.CurrentTagsSearch}}" class="sort-link {{if eq .CurrentSort "max_players"}}active{{end}}">Max Players</a>
-            <a href="/servers?sort=random&ip={{.CurrentIPSearch}}&name={{.CurrentNameSearch}}&tags={{.CurrentTagsSearch}}" class="sort-link {{if eq .CurrentSort "random"}}active{{end}}">Random</a>
-            <a href="/servers?sort=added_recently&ip={{.CurrentIPSearch}}&name={{.CurrentNameSearch}}&tags={{.CurrentTagsSearch}}" class="sort-link {{if eq .CurrentSort "added_recently"}}active{{end}}">Recently Added</a>
-            <a href="/servers?ip={{.CurrentIPSearch}}&name={{.CurrentNameSearch}}&tags={{.CurrentTagsSearch}}" class="sort-link {{if or (eq .CurrentSort "") (eq .CurrentSort "updated")}}active{{end}}">Last Updated</a>
-        </nav>
     </section>
 
     {{if eq .CurrentSort "location"}}
@@ -41,14 +45,19 @@
             <article class="server-item">
                 <a href="/server/{{.IP}}" class="server-logo-link" aria-label="View {{.IP}}">
                     {{if .Favicon}}
-                        <img src="{{.Favicon | safe}}" class="favicon" alt="">
+                        <img src="{{.Favicon | safe}}" class="favicon" alt="{{.IP}} favicon">
                     {{else}}
-                        <img src="/logo.png" class="favicon" alt="">
+                        <img src="/logo.png" class="favicon" alt="{{.IP}} favicon">
                     {{end}}
                 </a>
                 <div class="details">
                     <div class="server-title-row">
                         <a href="/server/{{.IP}}" class="ip">{{.IP}}</a>
+                        {{if .Location}}
+                            <span class="country-pill" title="{{.Location.Country}}">
+                                {{countryFlag .Location.CountryCode}} {{.Location.Country}}
+                            </span>
+                        {{end}}
                         {{if .IsOnline}}
                             <span class="status status-online">Online</span>
                         {{else}}
@@ -63,7 +72,6 @@
                     </div>
                     <div class="players">
                         <span>Players: {{.Players.Online}}/{{.Players.Max}}</span>
-                        <progress class="progress-bar" value="{{.PlayerPercent}}" max="100" title="{{.PlayerPercent}}%">{{.PlayerPercent}}%</progress>
                     </div>
                     {{if and (eq $.CurrentSort "location") (ge .DistanceKM 0.0)}}
                         <div class="distance">
@@ -83,7 +91,7 @@
     <nav class="pagination" aria-label="Pagination">
         <div>
             {{if .HasPrev}}
-                <a href="/servers?page={{.PrevPage}}&sort={{.CurrentSort}}&ip={{.CurrentIPSearch}}&name={{.CurrentNameSearch}}&tags={{.CurrentTagsSearch}}" class="button-secondary">&larr; Previous</a>
+                <a href="/servers?page={{.PrevPage}}&sort={{.CurrentSort}}&ip={{.CurrentIPSearch}}&name={{.CurrentNameSearch}}&tags={{.CurrentTagsSearch}}&version={{.CurrentVersionSearch}}&country={{.CurrentCountrySearch}}&privacy={{.CurrentPrivacySearch}}&online={{if .OnlineOnly}}1{{else}}0{{end}}" class="button-secondary">&larr; Previous</a>
             {{end}}
         </div>
         <div class="page-number">
@@ -91,7 +99,7 @@
         </div>
         <div>
             {{if .HasNext}}
-                <a href="/servers?page={{.NextPage}}&sort={{.CurrentSort}}&ip={{.CurrentIPSearch}}&name={{.CurrentNameSearch}}&tags={{.CurrentTagsSearch}}" class="button-secondary">Next &rarr;</a>
+                <a href="/servers?page={{.NextPage}}&sort={{.CurrentSort}}&ip={{.CurrentIPSearch}}&name={{.CurrentNameSearch}}&tags={{.CurrentTagsSearch}}&version={{.CurrentVersionSearch}}&country={{.CurrentCountrySearch}}&privacy={{.CurrentPrivacySearch}}&online={{if .OnlineOnly}}1{{else}}0{{end}}" class="button-secondary">Next &rarr;</a>
             {{end}}
         </div>
     </nav>

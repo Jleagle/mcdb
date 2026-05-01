@@ -8,7 +8,6 @@ import (
 	"strings"
 	"time"
 
-	"github.com/Jleagle/mcdb/scanner"
 	"go.mongodb.org/mongo-driver/v2/bson"
 	"go.mongodb.org/mongo-driver/v2/mongo"
 	"go.mongodb.org/mongo-driver/v2/mongo/options"
@@ -59,12 +58,12 @@ func InitDB() {
 }
 
 type mongoServer struct {
-	ID        string         `bson:"_id"` // IP
-	Data      scanner.Server `bson:"data"`
-	UpdatedAt time.Time      `bson:"updated_at"`
+	ID        string    `bson:"_id"` // IP
+	Data      Server    `bson:"data"`
+	UpdatedAt time.Time `bson:"updated_at"`
 }
 
-func SaveServer(s scanner.Server) error {
+func SaveServer(s Server) error {
 	ctx, cancel := context.WithTimeout(context.Background(), 5*time.Second)
 	defer cancel()
 
@@ -87,7 +86,7 @@ func SaveIP(ip string) (bool, error) {
 	// Only insert if it doesn't exist
 	update := bson.M{
 		"$setOnInsert": bson.M{
-			"data":       scanner.Server{IP: ip},
+			"data":       Server{IP: ip},
 			"updated_at": time.Now(),
 		},
 	}
@@ -113,9 +112,10 @@ type ListOptions struct {
 	Version string
 	Country string
 	Privacy string
+	Online  bool
 }
 
-func ListServers(opts ListOptions) ([]scanner.Server, error) {
+func ListServers(opts ListOptions) ([]Server, error) {
 	ctx := context.Background()
 
 	filter := listFilter(opts)
@@ -196,7 +196,7 @@ func ListServers(opts ListOptions) ([]scanner.Server, error) {
 		}
 	}
 
-	var servers []scanner.Server
+	var servers []Server
 	for _, r := range results {
 		if r.Data.IP == "" {
 			r.Data.IP = r.ID
@@ -294,6 +294,9 @@ func listFilter(opts ListOptions) bson.M {
 		}
 		andFilters = append(andFilters, bson.M{"$and": tagFilters})
 	}
+	if opts.Online {
+		andFilters = append(andFilters, bson.M{"data.is_online": true})
+	}
 
 	if len(andFilters) == 0 {
 		return bson.M{}
@@ -302,7 +305,7 @@ func listFilter(opts ListOptions) bson.M {
 	return bson.M{"$and": andFilters}
 }
 
-func GetOldestServer() (scanner.Server, error) {
+func GetOldestServer() (Server, error) {
 	ctx, cancel := context.WithTimeout(context.Background(), 5*time.Second)
 	defer cancel()
 
@@ -310,7 +313,7 @@ func GetOldestServer() (scanner.Server, error) {
 	var result mongoServer
 	err := serversCol.FindOne(ctx, bson.M{}, opts).Decode(&result)
 	if err != nil {
-		return scanner.Server{}, err
+		return Server{}, err
 	}
 
 	if result.Data.IP == "" {
@@ -320,7 +323,6 @@ func GetOldestServer() (scanner.Server, error) {
 	return result.Data, nil
 }
 
-func GetServer(ip string) (scanner.Server, error) {
 type IPWithDate struct {
 	IP        string
 	UpdatedAt time.Time
@@ -355,13 +357,14 @@ func GetServerIPs() ([]IPWithDate, error) {
 	return ips, nil
 }
 
+func GetServer(ip string) (Server, error) {
 	ctx, cancel := context.WithTimeout(context.Background(), 5*time.Second)
 	defer cancel()
 
 	var result mongoServer
 	err := serversCol.FindOne(ctx, bson.M{"_id": ip}).Decode(&result)
 	if err != nil {
-		return scanner.Server{}, err
+		return Server{}, err
 	}
 
 	if result.Data.IP == "" {
@@ -401,12 +404,86 @@ type lastIPState struct {
 	Value string `bson:"value"`
 }
 
+type CountryCount struct {
+	Name  string `bson:"_id"`
+	Code  string `bson:"code"`
+	Count int    `bson:"count"`
+}
+
+type VersionCount struct {
+	Name  string `bson:"_id"`
+	Count int    `bson:"count"`
+}
+
+func GetVersions() ([]VersionCount, error) {
+	ctx, cancel := context.WithTimeout(context.Background(), 10*time.Second)
+	defer cancel()
+
+	pipeline := mongo.Pipeline{
+		bson.D{{Key: "$match", Value: bson.M{
+			"data.version.name": bson.M{"$ne": "", "$exists": true, "$type": "string"},
+		}}},
+		bson.D{{Key: "$group", Value: bson.M{
+			"_id":   "$data.version.name",
+			"count": bson.M{"$sum": 1},
+		}}},
+		bson.D{{Key: "$sort", Value: bson.M{"_id": -1}}}, // Sort by version name descending (usually newer first)
+	}
+
+	cursor, err := serversCol.Aggregate(ctx, pipeline)
+	if err != nil {
+		return nil, err
+	}
+	defer cursor.Close(ctx)
+
+	var results []VersionCount
+	if err := cursor.All(ctx, &results); err != nil {
+		return nil, err
+	}
+
+	return results, nil
+}
+
+func GetCountries() ([]CountryCount, error) {
+	ctx, cancel := context.WithTimeout(context.Background(), 10*time.Second)
+	defer cancel()
+
+	pipeline := mongo.Pipeline{
+		bson.D{{Key: "$match", Value: bson.M{
+			"data.location.country":      bson.M{"$ne": "", "$exists": true, "$type": "string"},
+			"data.location.country_code": bson.M{"$ne": "", "$exists": true, "$type": "string"},
+		}}},
+		bson.D{{Key: "$group", Value: bson.M{
+			"_id":   "$data.location.country",
+			"code":  bson.M{"$first": "$data.location.country_code"},
+			"count": bson.M{"$sum": 1},
+		}}},
+		bson.D{{Key: "$sort", Value: bson.M{"_id": 1}}},
+	}
+
+	cursor, err := serversCol.Aggregate(ctx, pipeline)
+	if err != nil {
+		return nil, err
+	}
+	defer cursor.Close(ctx)
+
+	var results []CountryCount
+	if err := cursor.All(ctx, &results); err != nil {
+		return nil, err
+	}
+
+	return results, nil
+}
+
 func GetTags() ([]TagCount, error) {
 	ctx, cancel := context.WithTimeout(context.Background(), 10*time.Second)
 	defer cancel()
 
 	pipeline := mongo.Pipeline{
 		bson.D{{Key: "$unwind", Value: "$data.tags"}},
+		bson.D{{Key: "$match", Value: bson.M{
+			"data.tags": bson.M{"$ne": "", "$exists": true, "$type": "string"},
+		}}},
 		bson.D{{Key: "$group", Value: bson.M{
 			"_id":   "$data.tags",
 			"count": bson.M{"$sum": 1},

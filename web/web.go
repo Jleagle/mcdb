@@ -9,7 +9,6 @@ import (
 	"path/filepath"
 	"strings"
 
-	"github.com/Jleagle/mcdb/scanner"
 	"github.com/Jleagle/mcdb/storage"
 )
 
@@ -23,13 +22,15 @@ type BasePageData struct {
 }
 
 type Storage interface {
-	ListServers(opts storage.ListOptions) ([]scanner.Server, error)
-	GetServer(ip string) (scanner.Server, error)
+	ListServers(opts storage.ListOptions) ([]storage.Server, error)
+	GetServer(ip string) (storage.Server, error)
 	GetServerIPs() ([]storage.IPWithDate, error)
 	CountServers() (int64, error)
 	CountServersWithOptions(opts storage.ListOptions) (int64, error)
 	CountPlayersOnline() (int64, error)
 	GetTags() ([]storage.TagCount, error)
+	GetCountries() ([]storage.CountryCount, error)
+	GetVersions() ([]storage.VersionCount, error)
 }
 
 type templateContext struct {
@@ -62,6 +63,8 @@ func renderTemplate(w http.ResponseWriter, r *http.Request, tmplName string, dat
 			return template.URL(fmt.Sprint(s))
 		},
 		"formatNumber": formatNumber,
+		"countryFlag":  countryFlag,
+		"trim":         strings.TrimSpace,
 	}
 
 	templateData := templateContext{
@@ -118,6 +121,14 @@ func formatNumber(n int64) string {
 	}
 
 	return string(out)
+}
+
+func countryFlag(code string) string {
+	if len(code) != 2 {
+		return ""
+	}
+	code = strings.ToUpper(code)
+	return string(rune(code[0])+127397) + string(rune(code[1])+127397)
 }
 
 // haversineDistance calculates the distance between two points on the Earth

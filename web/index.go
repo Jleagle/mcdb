@@ -10,7 +10,7 @@ import (
 )
 
 type ServerWithDistance struct {
-	scanner.Server
+	storage.Server
 	DistanceKM float64
 }
 
@@ -35,6 +35,7 @@ type IndexTemplateData struct {
 	CurrentVersionSearch string
 	CurrentCountrySearch string
 	CurrentPrivacySearch string
+	OnlineOnly           bool
 	UblockLink           string // New field for the uBlock Origin link
 }
 
@@ -57,6 +58,10 @@ func indexHandler(store Storage) http.HandlerFunc {
 		versionSearch := r.URL.Query().Get("version")
 		countrySearch := r.URL.Query().Get("country")
 		privacySearch := r.URL.Query().Get("privacy")
+		onlineSearch := true
+		if r.URL.Query().Has("online") && r.URL.Query().Get("online") == "0" {
+			onlineSearch = false
+		}
 
 		limit := int64(20)
 		offset := int64(page-1) * limit
@@ -71,6 +76,7 @@ func indexHandler(store Storage) http.HandlerFunc {
 			Version: versionSearch,
 			Country: countrySearch,
 			Privacy: privacySearch,
+			Online:  onlineSearch,
 		}
 
 		var userLocationName string
@@ -149,6 +155,7 @@ func indexHandler(store Storage) http.HandlerFunc {
 			CurrentVersionSearch: versionSearch,
 			CurrentCountrySearch: countrySearch,
 			CurrentPrivacySearch: privacySearch,
+			OnlineOnly:           onlineSearch,
 		}
 
 		userAgent := r.Header.Get("User-Agent")

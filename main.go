@@ -107,7 +107,7 @@ func main() {
 // storageInterface adapts our storage package to the interfaces required by scanner, web and seeder
 type storageInterface struct{}
 
-func (s storageInterface) SaveServer(status scanner.Server) error {
+func (s storageInterface) SaveServer(status storage.Server) error {
 	return storage.SaveServer(status)
 }
 
@@ -123,15 +123,15 @@ func (s storageInterface) LoadLastIP() string {
 	return storage.LoadLastIP()
 }
 
-func (s storageInterface) ListServers(opts storage.ListOptions) ([]scanner.Server, error) {
+func (s storageInterface) ListServers(opts storage.ListOptions) ([]storage.Server, error) {
 	return storage.ListServers(opts)
 }
 
-func (s storageInterface) GetOldestServer() (scanner.Server, error) {
+func (s storageInterface) GetOldestServer() (storage.Server, error) {
 	return storage.GetOldestServer()
 }
 
-func (s storageInterface) GetServer(ip string) (scanner.Server, error) {
+func (s storageInterface) GetServer(ip string) (storage.Server, error) {
 	return storage.GetServer(ip)
 }
 
@@ -153,4 +153,12 @@ func (s storageInterface) CountPlayersOnline() (int64, error) {
 
 func (s storageInterface) GetTags() ([]storage.TagCount, error) {
 	return storage.GetTags()
+}
+
+func (s storageInterface) GetCountries() ([]storage.CountryCount, error) {
+	return storage.GetCountries()
+}
+
+func (s storageInterface) GetVersions() ([]storage.VersionCount, error) {
+	return storage.GetVersions()
 }

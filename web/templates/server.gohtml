@@ -29,21 +29,20 @@
 
     <section class="server-hero" aria-labelledby="server-title">
         {{if .Favicon}}
-            <img src="{{.Favicon | safe}}" class="server-icon" alt="">
+            <img src="{{.Favicon | safe}}" class="server-icon" alt="{{.IP}} favicon">
         {{else}}
-            <img src="/logo.png" class="server-icon" alt="">
+            <img src="/logo.png" class="server-icon" alt="{{.IP}} placeholder icon">
         {{end}}
 
         <div class="server-meta">
             <p class="page-kicker">Server detail</p>
-            <h1 id="server-title">Server: {{.IP}}</h1>
+            <h1 id="server-title">{{.IP}}</h1>
             <div class="server-actions">
                 {{if .IsOnline}}
                     <span class="status status-online">Online</span>
                 {{else}}
                     <span class="status status-offline">Offline</span>
                 {{end}}
-                <a href="/servers" class="button-secondary">&larr; Back to servers</a>
             </div>
         </div>
     </section>
@@ -63,9 +62,7 @@
                     {{end}}
                     <li><strong>Latency:</strong> {{.Delay}}</li>
                     {{if .Location}}
-                        <li><strong>Location:</strong> {{.Location.City}}, {{.Location.Country}} ({{.Location.CountryCode}})</li>
-                        <li><strong>Coordinates:</strong> {{.Location.Lat}}, {{.Location.Lon}}</li>
-                        <li><strong>ISP:</strong> {{.Location.ISP}}</li>
+                        <li><strong>Location:</strong> {{countryFlag .Location.CountryCode}} {{.Location.City}}, {{.Location.Country}} ({{.Location.CountryCode}})</li>
                     {{end}}
                     <li><strong>Last Updated:</strong> {{.UpdatedAt.Format "2006-01-02 15:04:05"}}</li>
                 </ul>
@@ -90,7 +87,7 @@
         {{if .IsJava}}
             <section class="data-panel" aria-labelledby="java-details-title">
                 <h2 id="java-details-title">Java Details</h2>
-                <pre>{{.Java.MOTD.Clean}}</pre>
+                <pre>{{trim .Java.MOTD.Clean}}</pre>
                 <ul class="data-list">
                     <li><strong>Protocol:</strong> {{.Java.Version.Protocol}}</li>
                     {{if .Java.SRVResult}}
@@ -134,7 +131,8 @@
                 {{if .Query.Players}}
                     <h3>Players</h3>
                     <pre>{{range .Query.Players}}{{.}}
-{{end}}</pre>
+                        {{end}}
+                    </pre>
                 {{end}}
             </section>
         {{end}}

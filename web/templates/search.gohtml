@@ -29,18 +29,33 @@
             </div>
             <div class="form-field">
                 <label for="search-version">Minecraft Version</label>
-                <input type="text" id="search-version" name="version" class="search-input search-input-compact" placeholder="1.21.1" value="{{.Version}}" autocomplete="off">
+                <select id="search-version" name="version" class="search-input search-input-compact">
+                    <option value="" {{if eq .Version ""}}selected{{end}}>All Versions</option>
+                    {{range .AvailableVersions}}
+                        <option value="{{.Name}}" {{if eq $.Version .Name}}selected{{end}}>{{.Name}} ({{.Count}})</option>
+                    {{end}}
+                </select>
                 <p class="field-help">Filter by a specific Minecraft version.</p>
             </div>
             <div class="form-field">
                 <label for="search-country">Country</label>
-                <input type="text" id="search-country" name="country" class="search-input search-input-compact" placeholder="Germany or DE" value="{{.Country}}" autocomplete="off">
-                <p class="field-help">Filter by country name or two-letter code.</p>
+                <select id="search-country" name="country" class="search-input search-input-compact">
+                    <option value="" {{if eq .Country ""}}selected{{end}}>All Countries</option>
+                    {{range .AvailableCountries}}
+                        <option value="{{.Name}}" {{if eq $.Country .Name}}selected{{end}}>{{countryFlag .Code}} {{.Name}} ({{.Count}})</option>
+                    {{end}}
+                </select>
+                <p class="field-help">Filter by the server's physical location.</p>
             </div>
             <div class="form-field">
                 <label for="search-tags">Tags</label>
-                <input type="text" id="search-tags" name="tags" class="search-input search-input-compact" placeholder="survival, pvp" value="{{.Tags}}" autocomplete="off">
-                <p class="field-help">Use comma-separated tags to narrow the result set.</p>
+                <select id="search-tags" name="tags" class="search-input search-input-compact">
+                    <option value="" {{if eq .Tags ""}}selected{{end}}>All Tags</option>
+                    {{range .AvailableTags}}
+                        <option value="{{.Name}}" {{if eq $.Tags .Name}}selected{{end}}>{{.Name}} ({{.Count}})</option>
+                    {{end}}
+                </select>
+                <p class="field-help">Filter by server game mode or style.</p>
             </div>
             <div class="form-field">
                 <label for="search-privacy">Access</label>
@@ -50,6 +65,11 @@
                     <option value="private" {{if eq .Privacy "private"}}selected{{end}}>Private (Whitelist) Only</option>
                 </select>
                 <p class="field-help">Filter by server access type.</p>
+            </div>
+            <div class="form-field checkbox-field">
+                <input type="hidden" id="search-online-hidden" name="online" value="{{if .Online}}1{{else}}0{{end}}">
+                <input type="checkbox" id="search-online" {{if .Online}}checked{{end}}>
+                <label for="search-online">Online Only</label>
             </div>
             <button type="submit" class="button-primary">Search Servers</button>
         </form>

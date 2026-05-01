@@ -8,11 +8,9 @@ function setTheme(theme) {
 
     if (theme === "dark") {
         body.classList.add("dark-mode");
-        themeToggle.textContent = "Light";
         themeToggle.setAttribute("aria-pressed", "true");
     } else {
         body.classList.remove("dark-mode");
-        themeToggle.textContent = "Dark";
         themeToggle.setAttribute("aria-pressed", "false");
     }
 }
@@ -57,4 +55,12 @@ if (adSlots.length > 0) {
         adSlots.forEach(() => window.adsbygoogle.push({}));
     });
     document.head.appendChild(script);
+}
+
+const searchOnlineCheckbox = document.getElementById("search-online");
+const searchOnlineHidden = document.getElementById("search-online-hidden");
+if (searchOnlineCheckbox && searchOnlineHidden) {
+    searchOnlineCheckbox.addEventListener("change", () => {
+        searchOnlineHidden.value = searchOnlineCheckbox.checked ? "1" : "0";
+    });
 }

@@ -4,7 +4,6 @@ import (
 	"context"
 	"testing"
 
-	"github.com/Jleagle/mcdb/scanner"
 	"go.mongodb.org/mongo-driver/v2/bson"
 )
 
@@ -15,7 +14,7 @@ func TestStorage(t *testing.T) {
 	serversCol.DeleteOne(ctx, bson.M{"_id": "1.2.3.4"})
 	stateCol.DeleteOne(ctx, bson.M{"_id": "test_last_ip"})
 
-	s := scanner.Server{
+	s := Server{
 		IP: "1.2.3.4",
 	}
 	s.Version.Name = "1.20.1"
